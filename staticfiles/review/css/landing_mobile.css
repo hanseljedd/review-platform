@@ -1,0 +1,142 @@
+
+/* ... existing styles ... */
+
+@media (max-width: 768px) {
+  /* Reset Content Override for Mobile */
+  .content {
+    height: auto !important; /* Allow scrolling */
+    overflow: visible !important;
+    display: block !important; /* Stack vertically */
+    padding: 16px !important; /* Restore padding */
+  }
+
+  body, html {
+    overflow: auto !important; /* Enable scrolling */
+    height: auto !important;
+  }
+
+  /* Adjust Spotify Shell */
+  .spotify-shell {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    padding: 0;
+    gap: 24px;
+  }
+
+  .main-view {
+    border-radius: 0;
+    height: auto;
+    overflow: visible;
+  }
+
+  .content-scroll {
+    overflow: visible; /* Let body scroll handle it */
+    height: auto;
+    padding-top: 80px; /* Keep space for header */
+  }
+
+  /* Fix Top Bar */
+  .top-bar {
+    position: fixed; /* Stick to top */
+    width: 100%;
+    border-radius: 0;
+    z-index: 2000; /* Ensure it stays on top */
+    /* Ensure height fits content or has reasonable limits */
+    height: auto;
+    min-height: 64px;
+    padding: 12px 16px; /* Adjust padding for mobile */
+  }
+
+  /* Header Content Adjustments */
+  .header-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-left: 40px; /* Space for the toggle button */
+  }
+
+  .banner-brand {
+    flex: 1; /* Take full remaining space */
+    padding: 0;
+    margin: 0;
+    overflow: visible; /* Allow text to be fully seen */
+  }
+
+  .banner-text {
+    font-size: 0.95rem; /* Slightly smaller to fit */
+    white-space: normal; /* Allow wrapping if absolutely necessary, but preferred single line */
+    overflow: visible;
+    text-overflow: clip;
+    display: inline-block;
+    line-height: 1.2;
+  }
+
+  /* Hide Share Icon and Upgrade Button on Mobile */
+  .banner-actions, .share-btn, .btn-upgrade-banner {
+    display: none !important;
+  }
+
+  /* Ensure sidebar toggle is visible and correctly placed */
+  .nav-toggle-btn {
+    z-index: 2100 !important;
+    top: 50% !important; /* Center vertically */
+    transform: translateY(-50%) !important;
+    left: 12px !important;
+    background-color: transparent !important; /* Transparent to blend */
+    border: none !important;
+    color: #000 !important; /* Black icon for green header */
+  }
+
+  /* Fix Toolkit Grid (Why Premium) for Mobile */
+  .toolkit-grid {
+    grid-template-columns: 1fr; /* Stack vertically */
+    gap: 24px;
+  }
+  
+  .toolkit-card {
+    width: 100%; /* Full width */
+    max-width: none;
+  }
+  .preview-pane {
+    display: none !important; 
+  }
+  
+  /* Show as Modal when Active */
+  .preview-pane.mobile-active {
+    display: flex !important;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    z-index: 5000;
+    margin: 0;
+    background-color: #121212; /* Match Spotify bg */
+    /* Add explicit blur backdrop for older phones if needed, though this is full screen */
+  }
+  
+  /* Fix Close Button in Mobile Modal */
+  .preview-header {
+    margin-top: 48px; /* Push down to avoid conflict with top bar */
+  }
+  
+  /* Ensure cross button is gone if using arrow elsewhere, but preview pane usually has an X */
+  /* If you want to replace the preview pane X with an arrow, we can style it */
+  .close-preview {
+    font-size: 1.5rem;
+    padding: 12px;
+  }
+  
+  /* Fix Grid */
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Smaller cards */
+    gap: 16px;
+  }
+  
+  /* Achievements Scroll */
+  .achievements-track-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

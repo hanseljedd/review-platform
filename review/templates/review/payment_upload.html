@@ -1,0 +1,212 @@
+{% extends "review/base.html" %}
+
+{% block page_title %}GCash Upload — Boardflash{% endblock %}
+{% block page_description %}Upload your GCash receipt for manual premium verification.{% endblock %}
+{% block meta_robots %}noindex,nofollow{% endblock %}
+{% block og_title %}GCash Upload — Boardflash{% endblock %}
+{% block og_description %}Upload your GCash receipt for manual premium verification.{% endblock %}
+{% block twitter_title %}GCash Upload — Boardflash{% endblock %}
+{% block twitter_description %}Upload your GCash receipt for manual premium verification.{% endblock %}
+
+{% block content %}
+<div style="
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100%;
+    width: 100%;
+    background-color: transparent;
+    padding: 20px;
+    box-sizing: border-box;
+">
+    <div style="
+        width: 100%;
+        max-width: 480px;
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        margin: auto; /* Center vertically if flex doesn't */
+    ">
+        <!-- Header -->
+        <div style="
+            text-align: center;
+            padding: 24px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-bottom: 1px solid #334155;
+        ">
+            <h3 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #fff;">Subscribe via GCash</h3>
+            <p style="margin: 4px 0 0; color: #94a3b8; font-size: 0.875rem;">Manual Verification</p>
+        </div>
+
+        <div style="padding: 24px;">
+            <!-- Instructions -->
+            <div style="margin-bottom: 24px;">
+                <h6 style="
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    color: #22c55e;
+                    margin: 0 0 12px;
+                ">Step 1: Send Payment</h6>
+                
+                <div style="
+                    padding: 16px;
+                    border-radius: 8px;
+                    background-color: #0f172a;
+                    border: 1px dashed #475569;
+                    margin-bottom: 16px;
+                ">
+                    <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                        <div style="
+                            width: 40px;
+                            height: 40px;
+                            background: #007dfe;
+                            border-radius: 8px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-weight: bold;
+                            margin-right: 12px;
+                            font-family: sans-serif;
+                        ">G</div>
+                        <div>
+                            <div style="color: white; font-weight: 700;">0917-XXX-XXXX</div>
+                            <div style="color: #94a3b8; font-size: 0.85rem;">YOUR NAME HERE</div>
+                        </div>
+                    </div>
+                    
+                    <!-- QR Placeholder -->
+                    <div style="
+                        background-color: white;
+                        border-radius: 8px;
+                        padding: 8px;
+                        width: 180px;
+                        height: 180px;
+                        margin: 0 auto;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">
+                        <!-- Replace with <img src="..." style="width: 100%;"> -->
+                        <span style="color: #000; font-weight: 700; font-size: 0.8rem; text-align: center;">QR CODE<br>PLACEHOLDER</span>
+                    </div>
+                </div>
+                
+                <p style="color: #94a3b8; font-size: 0.875rem; margin: 0;">
+                    Send <strong>₱100</strong> (Monthly) or <strong>₱600</strong> (Yearly).
+                </p>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #334155; margin: 24px 0;">
+
+            <!-- Upload Form -->
+            <div>
+                <h6 style="
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    color: #22c55e;
+                    margin: 0 0 12px;
+                ">Step 2: Upload Proof</h6>
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- New Fields -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; color: #fff; font-size: 0.875rem; margin-bottom: 8px;">Full Name</label>
+                        <input type="text" name="full_name" placeholder="e.g. Juan Dela Cruz" style="
+                            width: 100%;
+                            background-color: #0f172a;
+                            color: white;
+                            border: 1px solid #334155;
+                            padding: 10px;
+                            border-radius: 6px;
+                            font-size: 0.9rem;
+                            outline: none;
+                        " required>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; color: #fff; font-size: 0.875rem; margin-bottom: 8px;">Email Address</label>
+                        <input type="email" name="email" placeholder="name@example.com" value="{{ request.user.email }}" style="
+                            width: 100%;
+                            background-color: #0f172a;
+                            color: white;
+                            border: 1px solid #334155;
+                            padding: 10px;
+                            border-radius: 6px;
+                            font-size: 0.9rem;
+                            outline: none;
+                        " required>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; color: #fff; font-size: 0.875rem; margin-bottom: 8px;">Desired Username</label>
+                        <input type="text" name="desired_username" placeholder="Username you want" value="{{ request.user.username }}" style="
+                            width: 100%;
+                            background-color: #0f172a;
+                            color: white;
+                            border: 1px solid #334155;
+                            padding: 10px;
+                            border-radius: 6px;
+                            font-size: 0.9rem;
+                            outline: none;
+                        " required>
+                    </div>
+                    
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; color: #fff; font-size: 0.875rem; margin-bottom: 8px;">Amount Sent</label>
+                        <select name="amount" style="
+                            width: 100%;
+                            background-color: #0f172a;
+                            color: white;
+                            border: 1px solid #334155;
+                            padding: 10px;
+                            border-radius: 6px;
+                            font-size: 0.9rem;
+                            outline: none;
+                        " required>
+                            <option value="100">₱100.00 - 1 Month Premium</option>
+                            <option value="600">₱600.00 - 1 Year Premium (Save 50%)</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; color: #fff; font-size: 0.875rem; margin-bottom: 8px;">Screenshot / Receipt</label>
+                        <input type="file" name="proof" style="
+                            width: 100%;
+                            background-color: #0f172a;
+                            color: white;
+                            border: 1px solid #334155;
+                            padding: 10px;
+                            border-radius: 6px;
+                            font-size: 0.9rem;
+                        " accept="image/*,application/pdf" required>
+                    </div>
+
+                    <button type="submit" style="
+                        width: 100%;
+                        background-color: #22c55e;
+                        color: #000;
+                        border: none;
+                        padding: 12px;
+                        border-radius: 6px;
+                        font-weight: 700;
+                        font-size: 1rem;
+                        cursor: pointer;
+                        transition: background 0.2s;
+                    " onmouseover="this.style.backgroundColor='#16a34a'" onmouseout="this.style.backgroundColor='#22c55e'">
+                        Submit for Verification
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

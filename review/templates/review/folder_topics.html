@@ -1,0 +1,111 @@
+{% extends "review/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-container" style="padding: 40px; max-width: 1200px; margin: 0 auto; color: #fff;">
+  
+  <!-- Breadcrumb -->
+  <div style="margin-bottom: 24px; font-size: 0.9rem; color: #94a3b8;">
+    <a href="{% url 'review:landing' %}" style="color: #94a3b8; text-decoration: none;">Home</a> 
+    <span style="margin: 0 8px;">/</span>
+    <a href="{% url 'review:subject_folders' subject.slug %}" style="color: #94a3b8; text-decoration: none;">{{ subject.title }}</a>
+    <span style="margin: 0 8px;">/</span>
+    <span style="color: #fff;">{{ folder_name }}</span>
+  </div>
+
+  <div style="margin-bottom: 40px; display: flex; align-items: center; gap: 16px;">
+    <div style="
+        width: 48px; 
+        height: 48px; 
+        background: #1e293b; 
+        border-radius: 12px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        color: #22c55e;
+    ">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+    </div>
+    <div>
+        <h1 style="font-size: 2rem; font-weight: 800; margin: 0; line-height: 1;">{{ folder_name }}</h1>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 0.9rem;">Topics in this folder</p>
+    </div>
+  </div>
+
+  <div class="topics-grid">
+    {% for topic in topics %}
+    <a href="{% url 'review:flashcards' topic.slug %}" style="text-decoration: none;">
+      <div class="topic-card" style="
+          background: #1e293b; 
+          border: 1px solid #334155; 
+          border-radius: 12px; 
+          padding: 24px; 
+          transition: all 0.2s ease;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+      ">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+            <h3 style="color: #fff; font-size: 1.1rem; font-weight: 600; margin: 0;">{{ topic.title }}</h3>
+            {% if topic.is_private %}
+            <span style="background: #334155; color: #94a3b8; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;">PRIVATE</span>
+            {% endif %}
+        </div>
+        
+        <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px; flex-grow: 1;">
+            {{ topic.description|default:"No description"|truncatechars:100 }}
+        </p>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: #64748b; border-top: 1px solid #334155; padding-top: 12px;">
+            <span>{{ topic.questions.count }} Flashcards</span>
+            <span style="color: #22c55e; display: flex; align-items: center; gap: 4px; font-weight: 600;">
+                Study <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </span>
+        </div>
+      </div>
+    </a>
+    {% empty %}
+    <div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 48px;">
+      <p>No topics found in this folder.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <style>
+    /* Responsive Grid Layout */
+    .topics-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* Mobile: 1 column */
+    }
+
+    /* Tablet: 2 columns */
+    @media (min-width: 640px) {
+      .topics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Laptop: 3 columns */
+    @media (min-width: 900px) {
+      .topics-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* Desktop: 4 columns */
+    @media (min-width: 1100px) {
+      .topics-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .topic-card:hover {
+      background: #253346;
+      border-color: #475569;
+      transform: translateY(-2px);
+    }
+  </style>
+
+</div>
+{% endblock %}

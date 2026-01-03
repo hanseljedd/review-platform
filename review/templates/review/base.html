@@ -1,0 +1,336 @@
+{% load static %}
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{% block page_title %}Boardflash — Pass Your Exam{% endblock %}</title>
+    <meta name="description" content="{% block page_description %}Study flashcards, mock exams, and premium review files to pass licensure exams. Upgrade via GCash upload.{% endblock %}">
+    <meta name="robots" content="{% block meta_robots %}index,follow{% endblock %}">
+    <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+    <meta property="og:site_name" content="Boardflash">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}Boardflash — Pass Your Exam{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Study flashcards, mock exams, and premium review files to pass licensure exams. Upgrade via GCash upload.{% endblock %}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{% block twitter_title %}Boardflash — Pass Your Exam{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Study flashcards, mock exams, and premium review files to pass licensure exams. Upgrade via GCash upload.{% endblock %}">
+    {% block social_images %}{% endblock %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json" nonce="{{ request.csp_nonce }}">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Boardflash",
+        "url": "{{ request.scheme }}://{{ request.get_host }}/"
+      }
+    </script>
+    <link rel="stylesheet" href="{% static 'review/css/main.css' %}">
+    <script src="{% static 'review/js/pomodoro.js' %}" defer></script>
+    {% block head_extra %}{% endblock %}
+  </head>
+  <body>
+    <!-- Global Loading Screen -->
+    <div id="page-loader">
+      <div class="loader-content">
+        <div class="loader-circuit">
+           <div class="circuit-ring"></div>
+           <div class="circuit-ring ring-2"></div>
+           <div class="circuit-core">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+           </div>
+        </div>
+        <div class="loader-text">
+          <span class="loading-word">INITIALIZING</span>
+          <span class="loading-dots">...</span>
+        </div>
+        <div class="loader-status" id="loader-status-text">Connecting to Boardflash System</div>
+      </div>
+    </div>
+    <script nonce="{{ request.csp_nonce }}">
+       // Loader Logic
+       (function(){
+         var msgs = [
+           "Calibrating Flux Capacitors...",
+           "Loading Engineering Formulas...",
+           "Reviewing Flashcards...",
+           "Syncing Mock Exams...",
+           "Ready."
+         ];
+         var statusEl = document.getElementById("loader-status-text");
+         var i = 0;
+         var startTime = Date.now();
+         var slowConnectionTriggered = false;
+
+         var interval = setInterval(function(){
+            // If loading takes longer than 5 seconds, show "Slow Connection" message
+            if (!slowConnectionTriggered && (Date.now() - startTime > 5000)) {
+                if(statusEl) {
+                    statusEl.textContent = "Detecting slow network... Hang tight!";
+                    statusEl.style.color = "#fbbf24"; // Amber/Warning color
+                }
+                slowConnectionTriggered = true;
+                return; // Stop cycling normal messages
+            }
+            
+            if (!slowConnectionTriggered) {
+                i = (i + 1) % msgs.length;
+                if(statusEl) statusEl.textContent = msgs[i];
+            }
+         }, 400);
+
+         window.addEventListener("load", function(){
+            clearInterval(interval);
+            var loader = document.getElementById("page-loader");
+            if(loader) {
+               loader.classList.add("loaded");
+               setTimeout(function(){
+                 loader.style.display = "none";
+               }, 600); // Wait for transition
+            }
+         });
+       })();
+    </script>
+    <style>
+      /* Loader CSS */
+      #page-loader {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: #000;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.5s ease-out, visibility 0.5s;
+      }
+      #page-loader.loaded {
+        opacity: 0;
+        visibility: hidden;
+      }
+      .loader-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+      .loader-circuit {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .circuit-core {
+        color: var(--accent);
+        z-index: 2;
+        animation: pulse-core 2s infinite ease-in-out;
+      }
+      .circuit-ring {
+        position: absolute;
+        border: 2px solid var(--accent);
+        border-radius: 50%;
+        opacity: 0;
+        animation: ripple 2s infinite cubic-bezier(0, 0.2, 0.8, 1);
+      }
+      .ring-2 {
+        animation-delay: 0.5s;
+      }
+      .loader-text {
+        font-family: monospace;
+        color: var(--accent);
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+      .loader-status {
+        font-family: monospace;
+        color: #666;
+        font-size: 0.9rem;
+        min-height: 1.2em;
+      }
+      @keyframes ripple {
+        0% { width: 40px; height: 40px; opacity: 1; border-width: 2px; }
+        100% { width: 140px; height: 140px; opacity: 0; border-width: 0; }
+      }
+      @keyframes pulse-core {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+      }
+    </style>
+
+    <div class="app-shell">
+      <div id="sidebar-overlay" class="sidebar-overlay"></div>
+      <!-- Mobile-Only Sidebar Toggle (Outside Sidebar to avoid Transform hiding) -->
+      <div id="mobile-sidebar-toggle" class="nav-toggle-btn mobile-trigger">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+
+      <aside id="global-sidebar" class="sidebar">
+        <!-- Reverted to Arrow Button -->
+        <div id="sidebar-close" class="nav-toggle-btn desktop-trigger">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </div>
+        <div class="brand">
+          <a href="/" class="brand-logo">
+            <span class="brand-text">Boardflash</span>
+          </a>
+        </div>
+        <nav class="sidebar-nav">
+          <div class="nav-section">
+            <!-- Library -->
+            <a href="{% url 'review:landing' %}" class="nav-item nav-link" data-title="Home">
+               <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              </span>
+              <span class="nav-text">Home</span>
+            </a>
+             <!-- REMOVED: Static subjects -->
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-divider"></div>
+            <!-- Practice -->
+            <a href="{% url 'review:mock_exams' %}" class="nav-item nav-link" data-title="Mock Exams">
+              <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </span>
+              <span class="nav-text">Mock exams</span>
+            </a>
+            
+            <a href="/?highlight=concierge" class="nav-item nav-link" data-title="Upload Questions">
+              <span class="nav-icon" style="color: #60a5fa;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              </span>
+              <span class="nav-text">Upload Questions</span>
+            </a>
+            
+            <a href="{% url 'blog:blog_list' %}" class="nav-item nav-link" data-title="Blog">
+              <span class="nav-icon" style="color: #f472b6;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+              </span>
+              <span class="nav-text">Blog</span>
+            </a>
+          </div>
+
+          <div class="nav-section mt-auto">
+            <div class="nav-divider"></div>
+            <!-- Account -->
+            {% if user.is_authenticated %}
+              <div class="nav-item nav-link" style="cursor: default;" data-title="Signed in as {{ user.username }}">
+                <span class="nav-icon" style="color: var(--accent);">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </span>
+                <span class="nav-text">{{ user.username }}</span>
+              </div>
+              <a href="{% url 'review:logout' %}" class="nav-item nav-link" data-title="Log Out">
+                <span class="nav-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </span>
+                <span class="nav-text">Log Out</span>
+              </a>
+            {% else %}
+              <a href="{% url 'review:login' %}" class="nav-item nav-link" data-title="Log In">
+                <span class="nav-icon">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                </span>
+                <span class="nav-text">Log In</span>
+              </a>
+            {% endif %}
+
+            <a href="{% url 'review:review_files' %}" class="nav-item nav-link" data-title="Review Files">
+              <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              </span>
+              <span class="nav-text">Review files</span>
+            </a>
+            <a href="{% url 'review:info' %}" class="nav-item nav-link" data-title="About & Policies">
+              <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              </span>
+              <span class="nav-text">About & Policies</span>
+            </a>
+            <a href="{% url 'review:pricing' %}" class="nav-item nav-link" data-title="Upgrade">
+              <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"></path><path d="M11 3v6"></path><path d="M13 3v6"></path></svg>
+              </span>
+              <span class="nav-text">Upgrade</span>
+            </a>
+          </div>
+        </nav>
+      </aside>
+
+      <main class="content">
+        {% block content %}{% endblock %}
+      </main>
+      <footer class="global-footer" style="padding:4px 14px;text-align:center;color:var(--muted);border-top:1px solid var(--border);font-size:0.85rem;line-height:1.5;">
+        © {% now "Y" %} Boardflash. All rights reserved.
+      </footer>
+    </div>
+
+    <!-- Sidebar Toggle Script -->
+    <script nonce="{{ request.csp_nonce }}">
+      // Global Sidebar Toggle Script
+      // This runs independently of page-specific scripts to ensure toggle always works
+      (function() {
+        var toggles = document.querySelectorAll(".nav-toggle-btn");
+        var overlay = document.getElementById("sidebar-overlay");
+        var body = document.body;
+        
+        // Toggle Logic
+        toggles.forEach(function(btn) {
+            btn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                body.classList.toggle("sidebar-expanded");
+            };
+        });
+
+        // Close when clicking overlay (clicking anywhere outside sidebar)
+        if (overlay) {
+            overlay.onclick = function() {
+                body.classList.remove("sidebar-expanded");
+            };
+        }
+
+        // --- JS Tooltip Logic ---
+        // Create tooltip element
+        var tooltip = document.createElement('div');
+        tooltip.className = 'sidebar-tooltip';
+        document.body.appendChild(tooltip);
+
+        var navItems = document.querySelectorAll('.nav-item');
+        
+        navItems.forEach(function(item) {
+          item.addEventListener('mouseenter', function(e) {
+            // Only show if sidebar is collapsed (body does NOT have .sidebar-expanded)
+            if (body.classList.contains('sidebar-expanded')) return;
+            
+            var title = item.getAttribute('data-title');
+            if (!title) return;
+
+            tooltip.textContent = title;
+            
+            // Position it
+            var rect = item.getBoundingClientRect();
+            // Position to the right of the item + margin
+            tooltip.style.left = (rect.right + 12) + 'px';
+            // Center vertically relative to item
+            tooltip.style.top = (rect.top + (rect.height / 2) - (tooltip.offsetHeight / 2)) + 'px';
+            
+            tooltip.classList.add('visible');
+          });
+
+          item.addEventListener('mouseleave', function() {
+            tooltip.classList.remove('visible');
+          });
+        });
+      })();
+    </script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

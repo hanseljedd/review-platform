@@ -1,0 +1,39 @@
+{% extends "review/base.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-6">Review Materials</h1>
+  
+  {% if subjects %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for s in subjects %}
+        <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+          <h2 class="text-xl font-semibold mb-4 text-blue-600">{{ s.title }}</h2>
+          {% if s.description %}
+            <p class="text-gray-600 mb-4 text-sm">{{ s.description }}</p>
+          {% endif %}
+          
+          <ul class="space-y-2">
+            {% for topic in s.topics.all %}
+              {% if topic.is_active %}
+                <li>
+                  <a href="{% url 'review:flashcards' topic.slug %}" 
+                     class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 px-2 py-1 rounded transition">
+                    <span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+                    {{ topic.title }}
+                  </a>
+                </li>
+              {% endif %}
+            {% empty %}
+              <li class="text-gray-400 italic text-sm">No active topics.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-12">
+      <p class="text-xl text-gray-500">No subjects available yet.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

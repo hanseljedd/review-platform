@@ -1,0 +1,21 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{% url 'admin:review_topic_add' %}" class="addlink">
+      Add Topic
+    </a>
+  </li>
+  <li>
+    <a href="{% url 'admin:review_subject_import_flashcards' %}" class="addlink">
+      Import Flashcards (Paste)
+    </a>
+  </li>
+  <li>
+    <a href="{% url 'admin:review_subject_import_csv' %}" class="addlink">
+      Import CSV
+    </a>
+  </li>
+  {{ block.super }}
+{% endblock %}

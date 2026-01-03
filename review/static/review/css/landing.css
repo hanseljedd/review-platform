@@ -1,0 +1,680 @@
+/* Spotify-style Landing Page - Refined */
+
+:root {
+  --spotify-bg: #121212;
+  --spotify-card: #181818;
+  --spotify-card-hover: #282828;
+  --spotify-text-primary: #ffffff;
+  --spotify-text-secondary: #b3b3b3;
+  --spotify-green: #1ed760;
+  --spotify-green-hover: #1fdf64;
+  --spotify-sidebar-width: 280px; /* Default preview pane width */
+}
+
+/* Override global content styles for full-screen Spotify look */
+.content {
+  padding: 0 !important;
+  background-color: #000 !important;
+  height: calc(100vh - 36px); /* Adjusted for thinner footer */
+  overflow: hidden; 
+  display: flex;
+  flex-direction: row;
+  width: auto !important;
+  /* Fix sidebar overlay conflict: ensure z-index context */
+  position: relative;
+  z-index: 1; 
+}
+
+body, html {
+  background-color: #000;
+  color: var(--spotify-text-primary);
+  font-family: 'Libre Baskerville', serif;
+  margin: 0; padding: 0;
+  height: 100%;
+  overflow: hidden; /* Prevent global scroll */
+}
+
+.spotify-shell {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: #000;
+  gap: 8px; /* Gap between panels */
+  padding: 8px; /* Outer padding */
+  box-sizing: border-box;
+}
+
+/* Main View (Middle) */
+.main-view {
+  flex: 1;
+  background-color: var(--spotify-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Important for flexbox to shrink content */
+}
+
+/* Top Bar */
+.top-bar {
+  height: 64px;
+  width: 100%;
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  /* Green Fill as requested */
+  background-color: var(--spotify-green); 
+}
+
+/* Optional: Make background opaque/transparent based on scroll if needed, 
+   but user asked for "green fill", so static green is safer. 
+   If sticky effect is desired, we can add JS opacity logic back. 
+   For now, we'll keep the .top-bar-bg but let .top-bar handle the main fill. */
+
+.top-bar-bg {
+  /* No longer strictly needed if .top-bar has bg color, but keeping for compatibility */
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.1); /* Slight darken overlay */
+  z-index: -1;
+}
+
+/* Header Content (New) */
+.header-content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* BoardFlash Header Styles (Adapted) */
+.banner-brand {
+  display: flex; align-items: center; gap: 12px;
+}
+.banner-text {
+  font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; 
+  color: #000; /* Black text on green */
+}
+.banner-actions {
+  display: flex; align-items: center; gap: 16px;
+}
+.btn-icon {
+  background: transparent; border: none; 
+  color: #000; /* Black icons on green */
+  cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+}
+.btn-icon:hover { background: rgba(0,0,0,0.1); }
+.btn-upgrade-banner {
+  background: transparent; border: 2px solid #000; 
+  color: #000; /* Black text on green */
+  padding: 8px 24px; border-radius: 50px; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; text-decoration: none; transition: all 0.2s;
+}
+.btn-upgrade-banner:hover {
+  background: #000; color: #fff; transform: scale(1.05); border-color: #000;
+}
+
+/* Scrollable Content */
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 80px 24px 24px; /* Increased top padding for header */
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.3) transparent;
+  padding-right: 32px; /* Add extra padding on right so content doesn't touch scrollbar */
+}
+
+.hero-gradient {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 332px;
+  background: linear-gradient(180deg, #404040 0%, var(--spotify-bg) 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Section: Infinite Ticker */
+.section-ticker {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 32px; /* Uniform gap */
+  width: 100%;
+  overflow: hidden;
+}
+
+.ticker-wrap {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  background: transparent;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding: 24px 0;
+}
+
+.ticker-track {
+  display: flex;
+  white-space: nowrap;
+  will-change: transform;
+  animation: scroll-right 40s linear infinite; /* Slower speed (25s -> 40s) */
+  width: max-content;
+}
+
+.ticker-text {
+  display: inline-block;
+  padding-right: 2rem;
+  font-family: 'Libre Baskerville', serif;
+  font-weight: 400; /* Regular weight feels more gentle */
+  font-style: italic; /* Adds a caring touch */
+  font-size: 1.5rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  /* Glow effect */
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+/* Alternating Colors */
+.ticker-text.green {
+  background-image: linear-gradient(90deg, #1ed760, #aaff00);
+}
+
+.ticker-text.yellow {
+  background-image: linear-gradient(90deg, #e6ff33, #ffd700);
+}
+
+@keyframes scroll-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+/* Achievements Carousel Section */
+.section-achievements {
+  margin-bottom: 64px;
+}
+
+.achievements-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+}
+
+.header-pills {
+  display: flex;
+  gap: 12px;
+}
+
+.pill-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 8px 24px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.pill-btn.active, .pill-btn:hover {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+.carousel-nav {
+  display: flex;
+  gap: 12px;
+}
+
+.nav-circle {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.nav-circle:hover { opacity: 0.8; }
+
+.achievements-track-wrapper {
+  overflow-x: auto;
+  scrollbar-width: none; /* Hide scrollbar */
+  padding-bottom: 32px; /* Increased padding to allow hover lift */
+  padding-top: 24px; /* Added top padding to prevent top cut-off */
+  margin-top: -24px; /* Compensate for top padding to keep layout tight */
+}
+.achievements-track-wrapper::-webkit-scrollbar { display: none; }
+
+.achievements-track {
+  display: flex;
+  gap: 24px;
+  width: max-content;
+}
+
+/* Achievement Card Styles */
+.achievement-card {
+  width: 300px; height: 320px;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  color: #000; /* Default text color for light cards */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.achievement-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px -5px rgba(30, 215, 96, 0.5); /* Green downward glow */
+  z-index: 10;
+}
+
+/* Gradients */
+.card-blue {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: #fff; /* Blue card has white text usually, but image shows mixed. Let's stick to image style: Blue had white text */
+}
+.card-orange {
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+  color: #000;
+}
+.card-purple {
+  background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+  color: #000;
+}
+.card-green {
+  background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+  color: #000;
+}
+
+/* Card Internals */
+.card-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+
+.card-icon-circle {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1.2rem;
+  backdrop-filter: blur(4px);
+}
+
+.card-country {
+  font-size: 0.8rem; opacity: 0.8; font-weight: 600; text-transform: uppercase;
+}
+
+.card-content {
+  margin-top: auto; margin-bottom: 24px;
+}
+
+.card-subtitle {
+  font-size: 0.85rem; opacity: 0.8; display: block; margin-bottom: 4px;
+}
+
+.card-title {
+  font-size: 1.5rem; font-weight: 800; line-height: 1.2; margin: 0;
+}
+
+.card-bottom {
+  display: flex; justify-content: space-between; align-items: flex-end;
+}
+
+.card-link {
+  font-size: 0.8rem; font-weight: 700; text-decoration: none; color: inherit;
+  opacity: 0.8;
+}
+.card-link:hover { text-decoration: underline; opacity: 1; }
+
+/* Responsive adjustments for header */
+@media (max-width: 768px) {
+  .achievements-header { flex-direction: column; gap: 16px; align-items: flex-start; }
+  .header-pills { order: 2; }
+  .carousel-nav { order: 1; align-self: flex-end; }
+}
+/* Skill Card - 3D Flip */
+.skill-card {
+  width: 200px; height: 240px;
+  background-color: transparent;
+  perspective: 1000px; /* Enable 3D space */
+  box-shadow: none; /* Removed shadow from container, moved to faces */
+  padding: 0; /* Reset padding */
+  border-radius: 0; /* Reset radius */
+  transition: transform 0.3s;
+}
+.skill-card:hover { transform: translateY(-8px); /* Keep hover lift */ }
+
+.skill-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.skill-card:hover .skill-card-inner {
+  transform: rotateY(180deg);
+}
+
+.skill-card-front, .skill-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* Front Face */
+.skill-card-front {
+  background-color: #222;
+  border: 2px solid var(--spotify-green);
+  box-shadow: 0 0 15px rgba(30, 215, 96, 0.3); /* Green glow */
+}
+
+/* Back Face */
+.skill-card-back {
+  background-color: var(--spotify-green);
+  color: #000;
+  transform: rotateY(180deg);
+  border: none;
+  box-shadow: 0 8px 24px rgba(30, 215, 96, 0.4);
+}
+
+.skill-back-title {
+  font-size: 1.2rem; font-weight: 800; margin: 0 0 8px 0;
+  color: #000;
+}
+
+.skill-desc {
+  font-size: 0.9rem; font-weight: 500; line-height: 1.4;
+  color: #000; margin: 0;
+}
+
+/* Updated inner elements */
+.skill-icon { font-size: 3rem; margin-bottom: 8px; }
+.skill-name { font-size: 1.2rem; font-weight: 700; color: #fff; }
+
+/* Pricing Embed Styles (Simplified from pricing.css) */
+.section-pricing-embed {
+  margin-bottom: 32px; /* Uniform gap */
+}
+.pricing-embed-container {
+  margin-top: 16px;
+}
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px; /* Reduced from 32px */
+  align-items: start;
+}
+.pricing-card {
+  background: var(--spotify-card);
+  border-radius: 16px;
+  padding: 32px;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.pricing-card.featured {
+  background: linear-gradient(145deg, #1e1e1e, #121212);
+  border: 1px solid var(--spotify-green);
+  box-shadow: 0 0 30px rgba(30, 215, 96, 0.1);
+}
+.card-header { margin-bottom: 24px; }
+.card-title { font-size: 1.5rem; margin-bottom: 8px; color: #fff; }
+.card-desc { color: var(--spotify-text-secondary); }
+.card-price { font-size: 2.5rem; font-weight: 800; color: #fff; margin-bottom: 24px; }
+.card-price .currency { font-size: 1.5rem; vertical-align: super; }
+.card-price .period { font-size: 1rem; color: var(--spotify-text-secondary); font-weight: 400; }
+.feature-list { list-style: none; padding: 0; margin: 0 0 32px 0; }
+.feature-list li { margin-bottom: 12px; color: #ddd; display: flex; align-items: center; gap: 12px; }
+.feature-list li.disabled { color: #666; text-decoration: line-through; }
+.check-icon { color: var(--spotify-green); font-weight: bold; }
+.x-icon { color: #666; }
+.btn-pill.btn-full { width: 100%; text-align: center; display: block; padding: 14px; }
+.btn-accent { background: var(--spotify-green); color: #000; border: none; }
+.btn-accent:hover { background: var(--spotify-green-hover); transform: scale(1.02); }
+
+/* Creator Message Section */
+.section-creator-message {
+  margin: 0 -32px -24px -24px; /* Negative margin to stretch full width and bottom */
+  background-color: var(--spotify-green);
+  padding:40px 14px 40px; /* Increased padding */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  border-radius: 0; /* No radius */
+  /* Ensure it fills remaining height if short content, or just sits at bottom */
+}
+
+.creator-content {
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+}
+
+.creator-heading {
+  font-size:1.5 rem;
+  font-weight: 800;
+  margin-bottom: 32px;
+  color: #000;
+}
+
+.letter-placeholder {
+  width: 100%;
+  height: 200px; /* Placeholder height */
+  background-color: rgba(255,255,255,0.2);
+  border: 1px dashed rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.letter-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  opacity: 0.6;
+}
+
+/* Spacer Bottom */
+.spacer-bottom { height: 100px; }
+
+/* Resizer Handle */
+.resizer {
+  width: 8px; /* Wider handle for easier grabbing */
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 0.2s;
+  z-index: 100; /* Higher z-index to ensure it's clickable */
+  margin: 0;
+  position: relative; /* Ensure it sits in flow properly */
+}
+.resizer:hover, .resizer:active {
+  background-color: var(--spotify-green);
+}
+
+/* Right Sidebar: Preview Pane */
+.preview-pane {
+  width: var(--spotify-sidebar-width);
+  min-width: 280px; /* Start min width */
+  max-width: 800px; /* Limit max width */
+  background-color: var(--spotify-bg);
+  border-radius: 8px;
+  display: flex; flex-direction: column;
+  padding: 16px;
+  overflow-y: auto;
+  flex-shrink: 0; /* Prevent from shrinking automatically */
+  margin-right: 24px; /* Increased margin significantly to prevent "cut" look */
+}
+
+.preview-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 24px;
+}
+.preview-header h3 { font-size: 1rem; font-weight: 700; margin: 0; color: #fff; }
+.close-preview {
+  background: none; border: none; color: var(--spotify-text-secondary); cursor: pointer;
+}
+.close-preview:hover { color: #fff; }
+
+.preview-content {
+  flex: 1; display: flex; flex-direction: column;
+}
+.preview-content.hidden { display: none !important; }
+
+#preview-content-empty {
+  align-items: center; justify-content: center; text-align: center; color: var(--spotify-text-secondary);
+}
+.empty-state-icon { margin-bottom: 16px; opacity: 0.5; }
+
+/* Active Preview Styles */
+.preview-cover-img-small {
+  width: 100%; aspect-ratio: 1;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  background: #333;
+  margin-right: 2px; /* Slight adjust */
+}
+
+.preview-subject-header { text-align: center; margin-bottom: 24px; }
+.preview-subject-header h2 { font-size: 1.5rem; font-weight: 700; margin: 0; color: #fff; }
+.preview-desc { font-size: 0.9rem; color: var(--spotify-text-secondary); margin-bottom: 24px; text-align: center; line-height: 1.5; }
+
+/* Topic List Styles (Preview Pane) */
+.topic-list-container { margin-top: 24px; }
+.list-label { font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+.topic-list { display: flex; flex-direction: column; gap: 8px; }
+.topic-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px; border-radius: 4px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.topic-item:hover { background: rgba(255,255,255,0.1); }
+.topic-icon { color: var(--spotify-text-secondary); }
+.topic-info { flex: 1; display: flex; flex-direction: column; }
+.topic-name { font-size: 0.9rem; font-weight: 600; color: #fff; }
+.topic-count { font-size: 0.75rem; color: var(--spotify-text-secondary); }
+.btn-play-mini {
+  background: transparent; border: none; color: #fff; cursor: pointer; opacity: 0; transition: opacity 0.2s;
+}
+.topic-item:hover .btn-play-mini { opacity: 1; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  /* On smaller screens, we might hide the preview pane or make it overlay */
+  /* User requested "fit entire screen", so we keep flex behavior but maybe adjust min-widths */
+  .preview-pane { 
+      display: none; /* Keep hidden on mobile/tablet for now unless toggled */
+  }
+}
+
+/* Shelf Sections */
+.section-shelf { position: relative; z-index: 1; margin-bottom: 32px; /* Uniform gap */ }
+
+.shelf-header {
+  display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px;
+}
+.shelf-header h3 { font-size: 1.5rem; font-weight: 700; margin: 0; }
+.shelf-header h3:hover { text-decoration: underline; cursor: pointer; }
+
+.show-all {
+  font-size: 0.875rem; font-weight: 700; color: var(--spotify-text-secondary); text-decoration: none;
+}
+.show-all:hover { text-decoration: underline; }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px;
+}
+
+.content-card {
+  background-color: var(--spotify-card);
+  padding: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+/* Green glow on hover instead of play button */
+.content-card:hover { 
+  background-color: var(--spotify-card-hover);
+  box-shadow: 0 0 20px rgba(30, 215, 96, 0.3);
+}
+
+.card-img-wrapper {
+  position: relative; width: 100%; aspect-ratio: 1; margin-bottom: 16px;
+  border-radius: 4px; overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.card-img {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.card-title {
+  font-size: 0.95rem; font-weight: 700; margin: 0 0 8px; color: #fff;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; justify-content: center;
+}
+.card-desc {
+  font-size: 0.75rem; color: var(--spotify-text-secondary); margin: 0;
+  line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* Blog Card Specifics */
+.blog-card .card-info {
+  /* Ensure it takes up remaining space if needed */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 5rem; /* Reserve space */
+}
+
+.blog-title {
+  white-space: normal !important; /* Allow wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 6; /* Limit to 6 lines */
+  -webkit-box-orient: vertical;
+  
+  /* Font sizing */
+  font-size: calc(0.42rem + 0.42rem) !important; 
+  line-height: 1.5;
+  margin-bottom: 0 !important;
+  font-weight: 700;
+  color: #fff;
+}

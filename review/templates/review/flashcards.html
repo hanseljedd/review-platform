@@ -1,0 +1,273 @@
+{% extends "review/base.html" %}
+{% load static %}
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'review/css/flashcards.css' %}">
+<script defer src="{% static 'review/js/flashcards.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div id="flashcards-app"
+     data-topic-slug="{{ topic_slug|default:'' }}"
+     data-subject-slug="{{ subject_slug|default:'' }}"
+     data-is-premium="{{ is_premium_user|yesno:'true,false' }}"
+     data-random-enabled="{{ feature_random_enabled|yesno:'true,false' }}"
+     data-page-size="{{ page_size_default|default:200 }}"
+     data-analytics-enabled="true"
+     data-review-files-enabled="true"
+     data-mock-exam-enabled="true"
+     data-premium-login-required="false">
+
+  <header class="main-header-banner">
+    <div class="banner-brand">
+      <span class="banner-text">Boardflash - Flashcards & Mock Exams</span>
+    </div>
+    <div class="banner-actions">
+      <button class="btn-icon" title="Share">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+      </button>
+      <a href="/pricing/" class="btn-upgrade-banner">Upgrade</a>
+    </div>
+  </header>
+
+  <div class="container-fluid">
+    <div class="page-shell">
+      <!-- Prominent Page Title -->
+      <div class="section-title mb-4">
+        <h1 class="display-5 fw-bold text-white mb-2">
+          {{ subject_title|default:"Electronics"|title }}
+          <span class="text-muted fw-light">::</span>
+          <span class="text-accent">{{ topic_title|default:"Operational Amplifiers" }}</span>
+        </h1>
+        <nav class="section-breadcrumb">
+          <span class="text-muted">Home</span>
+          <span class="sep">»</span>
+          <span class="text-muted">{{ subject_title|default:'Electronics' }}</span>
+          <span class="sep">»</span>
+          <span class="text-white">{{ topic_title|default:'Operational Amplifiers' }}</span>
+        </nav>
+      </div>
+      <div class="divider"></div>
+    </div>
+
+    <div class="row g-3">
+      <main class="col-12 col-lg-6">
+        <div id="state-loading" class="alert alert-secondary" style="display:none">Loading</div>
+        <div id="state-error" class="alert alert-danger" style="display:none">
+          Error
+          <div class="mt-2">
+            <button id="retry-btn" class="btn btn-outline-secondary btn-sm">Retry</button>
+          </div>
+        </div>
+        <div id="state-empty" class="alert alert-warning" style="display:none">No flashcards found</div>
+        <div id="state-upgrade" style="display:none">
+          <div class="card border-dashed">
+            <div class="card-body">
+              <div class="h6 mb-2">Premium required</div>
+              <p class="text-muted mb-3">Random mode is available for premium users</p>
+              <div class="d-flex gap-2">
+                <a href="/pricing/" class="btn btn-success btn-sm">Upgrade</a>
+                <button id="downgrade-btn" class="btn btn-outline-secondary btn-sm">Switch to Ordered</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="fc-content" style="display:none">
+          <div class="card flashcard-card mb-3" id="flashcard-card">
+            <div class="flip-wrapper">
+              <div id="flip-inner" class="flip-inner">
+                <div class="flip-face flip-front">
+                  <div class="flashcard-body" style="width:100%">
+                    <div id="question-prompt" class="prompt text-center"></div>
+                    <div id="question-choices" class="choices-stack"></div>
+                  </div>
+                </div>
+                <div class="flip-face flip-back">
+                  <div class="flashcard-body" style="width:100%">
+                    <div id="question-answer" class="answer-face"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="deck-actions">
+              <button id="prev-btn" class="btn btn-outline-secondary btn-sm">Previous</button>
+              <button id="reveal-btn" class="btn btn-primary btn-sm">Reveal Answer</button>
+              <button id="next-btn" class="btn btn-outline-secondary btn-sm">Next</button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <aside class="col-12 col-lg-3">
+        <!-- Controls Panel (Clean Grid) -->
+        <div class="controls-grid">
+           <div class="control-item">
+             <span class="control-label">Mode</span>
+             <select id="mode-select" class="form-select form-select-sm bg-dark border-secondary text-white">
+               <option value="ordered" class="text-dark">Ordered</option>
+               <option value="random" class="text-dark">Random</option>
+             </select>
+           </div>
+           <div class="control-item">
+             <span class="control-label">Progress</span>
+             <div class="progress-pill-sidebar text-accent font-monospace">
+                <span id="progress-current">0</span> / <span id="progress-total">0</span>
+             </div>
+           </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0; overflow:visible;">
+            <div class="shortcuts-menu">
+              <div class="shortcut-header">Quick Shortcuts</div>
+              
+              <!-- 1) Subjects (Home) -->
+              <a href="/" class="shortcut-category" style="text-decoration: none; display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <span class="cat-icon shortcut-icon" style="margin-right: 12px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                  </span>
+                  <span class="cat-name" style="color: #cbd5e1; font-weight: 500;">Subjects</span>
+              </a>
+
+              <!-- 2) Upload Files (Concierge Highlight) -->
+              <a href="/?highlight=concierge" class="shortcut-category" style="text-decoration: none; display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <span class="cat-icon shortcut-icon" style="margin-right: 12px; color: #60a5fa;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  </span>
+                  <span class="cat-name" style="color: #cbd5e1; font-weight: 500;">Upload Files</span>
+              </a>
+
+              <!-- 3) Mock Exam -->
+              <a href="{% url 'review:mock_exams' %}" class="shortcut-category" style="text-decoration: none; display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <span class="cat-icon shortcut-icon" style="margin-right: 12px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                  </span>
+                  <span class="cat-name" style="color: #cbd5e1; font-weight: 500;">Mock Exam</span>
+              </a>
+
+              <!-- 4) Review Files -->
+              <a href="{% url 'review:review_files' %}" class="shortcut-category" style="text-decoration: none; display: flex; align-items: center; padding: 12px 16px;">
+                  <span class="cat-icon shortcut-icon" style="margin-right: 12px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                  </span>
+                  <span class="cat-name" style="color: #cbd5e1; font-weight: 500;">Review Files</span>
+              </a>
+
+            </div>
+            <div id="quick-links-lock" class="p-3" style="display:none">Some items require premium</div>
+          </div>
+        </div>
+
+        <div class="premium-card">
+          <div class="premium-header">
+            <div class="premium-title">Premium Access</div>
+            <div class="premium-subtitle">Unlock your full potential</div>
+          </div>
+          <ul class="premium-features">
+            <li class="premium-feature-item">
+              <span>Random Mode</span>
+              {% if is_premium_user %}
+              <span class="status-unlocked" style="color:var(--accent);">On Premium ✅</span>
+              {% else %}
+              <span class="status-locked" id="feature-random-badge">Locked 🔒</span>
+              {% endif %}
+            </li>
+            <li class="premium-feature-item">
+              <span>Review Files</span>
+              {% if is_premium_user %}
+              <span class="status-unlocked" style="color:var(--accent);">On Premium ✅</span>
+              {% else %}
+              <span class="status-locked" id="feature-reviewfiles-badge">Locked 🔒</span>
+              {% endif %}
+            </li>
+            <li class="premium-feature-item">
+              <span>Mock Exams</span>
+              {% if is_premium_user %}
+              <span class="status-unlocked" style="color:var(--accent);">On Premium ✅</span>
+              {% else %}
+              <span class="status-locked" id="feature-mockexam-badge">Locked 🔒</span>
+              {% endif %}
+            </li>
+          </ul>
+          <div class="premium-footer">
+            {% if is_premium_user %}
+             <div class="btn-premium" style="background:var(--accent); color:black; cursor:default; text-align:center;">On Premium</div>
+            {% else %}
+            <a href="/pricing/" class="btn-premium">Upgrade Now</a>
+            {% endif %}
+            <div id="premium-upgrade-required" class="text-center mt-2" style="display:none; font-size:0.8rem; color:#ef4444;">
+              Login required
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+{{ seo_questions|json_script:"seo-questions" }}
+<div class="seo-topic-section" style="padding: 24px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+    <h2 style="font-size:1.5rem; font-weight:800; margin:0;">Flashcards for {{ topic_title }}</h2>
+    <button id="toggle-questions-btn" style="background: var(--accent); color:#000; border:none; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer;">Hide Questions List</button>
+  </div>
+  <p style="color:#b3b3b3; margin-bottom:16px;">{{ topic_seo_text }}</p>
+  <div id="seo-questions-section" style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th style="text-align:left; padding:10px; border-bottom:1px solid var(--border);">Flashcard</th>
+          <th style="text-align:left; padding:10px; border-bottom:1px solid var(--border);">Question</th>
+          <th style="text-align:left; padding:10px; border-bottom:1px solid var(--border);">Answer</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in seo_questions %}
+        <tr>
+          <td style="padding:10px; border-bottom:1px solid var(--border);">Flashcard {{ item.index }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--border);">{{ item.prompt }}</td>
+          <td style="padding:10px; border-bottom:1px solid var(--border);">{{ item.answer_text }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:24px;">
+    <h3 style="font-size:1.25rem; font-weight:800; margin-bottom:12px;">Suggested Next Topics</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+      {% for t in suggested_topics %}
+        <a href="{% url 'review:flashcards' t.slug %}" style="display:inline-flex; align-items:center; padding:10px 14px; background:#0f172a; border:1px solid #334155; border-radius:999px; color:#fff; text-decoration:none; font-weight:600;">
+          {{ t.title }}
+        </a>
+      {% empty %}
+        <div style="color:#b3b3b3;">No suggestions available.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<script nonce="{{ request.csp_nonce }}">
+  (function(){
+    var btn = document.getElementById('toggle-questions-btn');
+    var section = document.getElementById('seo-questions-section');
+    if (btn && section) {
+      btn.addEventListener('click', function(){
+        var hidden = section.style.display === 'none';
+        section.style.display = hidden ? 'block' : 'none';
+        btn.textContent = hidden ? 'Hide Questions List' : 'Show Questions List';
+      });
+      section.style.display = 'block';
+    }
+  })();
+</script>
+<script type="application/ld+json" nonce="{{ request.csp_nonce }}">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ request.scheme }}://{{ request.get_host }}/" },
+    { "@type": "ListItem", "position": 2, "name": "Flashcards", "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'review:flashcards_hub' %}" },
+    { "@type": "ListItem", "position": 3, "name": "{{ topic_title|escapejs }}", "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'review:flashcards' topic_slug %}" }
+  ]
+}
+</script>
+{% endblock %}

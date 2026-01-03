@@ -1,0 +1,123 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="module">
+    <h1>Import Flashcards (Copy/Paste)</h1>
+    <p>
+        Paste your questions below.
+        Use <code>---</code> to separate questions.
+    </p>
+
+    {% if error %}
+    <div style="padding:15px; background:#ffebeb; border:1px solid #ffcccc; color:#d00; margin-bottom:20px;">
+        <strong>Error:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div style="margin-bottom: 20px;">
+            <label for="subject_id" style="font-weight:bold; display:block; margin-bottom:5px;">Subject (Default)</label>
+            <select name="subject_id" id="subject_id" style="padding:8px; width:300px;">
+                <option value="">-- Detect from text or create new --</option>
+                {% for s in subjects %}
+                    <option value="{{ s.id }}">{{ s.title }}</option>
+                {% endfor %}
+            </select>
+            <div class="help" style="color:#666; font-size:0.85em; margin-top:4px;">
+                If text contains "Subject: ...", it overrides this selection.
+            </div>
+        </div>
+
+        <!-- Hidden by default, shown when Subject selected -->
+        <div id="topic_wrapper" style="margin-bottom: 20px; display:none;">
+            <label for="topic_id" style="font-weight:bold; display:block; margin-bottom:5px;">Topic (Default)</label>
+            <select name="topic_id" id="topic_id" style="padding:8px; width:300px;">
+                <option value="">-- Detect from text or create new --</option>
+                <!-- Populated via JS -->
+            </select>
+            <div class="help" style="color:#666; font-size:0.85em; margin-top:4px;">
+                If text contains "Topic: ...", it overrides this selection.
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label for="paste_text" style="font-weight:bold; display:block; margin-bottom:5px;">Paste Content</label>
+            <textarea name="paste_text" id="paste_text" rows="20" style="width:100%; font-family:monospace; padding:10px;" placeholder="Q: What is the capital of France?
+A) Berlin
+B) Madrid
+C) Paris
+D) Rome
+Answer: C
+---
+Q: What is 2 + 2?
+Answer: 4
+..."></textarea>
+        </div>
+
+        <div class="submit-row">
+            <input type="submit" value="Preview Import" class="default" style="padding:10px 20px; font-weight:bold;">
+        </div>
+    </form>
+</div>
+
+<!-- JavaScript for Dependent Dropdown -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const subjectSelect = document.getElementById('subject_id');
+    const topicSelect = document.getElementById('topic_id');
+    const topicWrapper = document.getElementById('topic_wrapper');
+    
+    // Store all topics in a JS object: { subject_id: [ {id, title}, ... ] }
+    const allTopics = {};
+    {% for t in topics %}
+    if (!allTopics["{{ t.subject.id }}"]) {
+        allTopics["{{ t.subject.id }}"] = [];
+    }
+    allTopics["{{ t.subject.id }}"].push({ id: "{{ t.id }}", title: "{{ t.title|escapejs }}" });
+    {% endfor %}
+    
+    function updateTopics() {
+        const selectedSubjectId = subjectSelect.value;
+        
+        // Reset
+        topicSelect.innerHTML = '<option value="">-- Detect from text or create new --</option>';
+        
+        if (!selectedSubjectId) {
+            // Hide wrapper if no subject
+            topicWrapper.style.display = 'none';
+            return; 
+        }
+
+        // Show wrapper
+        topicWrapper.style.display = 'block';
+
+        const topics = allTopics[selectedSubjectId] || [];
+        
+        if (topics.length > 0) {
+            topics.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.title;
+                topicSelect.appendChild(opt);
+            });
+        } else {
+             // Subject has no topics yet
+             const opt = document.createElement('option');
+             opt.value = "";
+             opt.textContent = "(No topics found for this subject)";
+             topicSelect.appendChild(opt);
+        }
+    }
+
+    // Event listener
+    subjectSelect.addEventListener('change', updateTopics);
+    
+    // Initialize
+    if (subjectSelect.value) {
+        updateTopics();
+    }
+});
+</script>
+{% endblock %}

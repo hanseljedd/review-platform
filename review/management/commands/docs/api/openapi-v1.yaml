@@ -1,0 +1,1120 @@
+openapi: 3.0.3
+info:
+  title: Review Site API (core.review) — v1
+  version: "1.0.0"
+  description: |
+    API for the Review Site (flashcards / mock exams / review files / analytics / payments).
+    Conforms to project MASTER SPEC: Django 5 + DRF, feature-flag gating, pagination, signed webhooks,
+    idempotency, and deployment-readiness (Render -> Cloud Run).
+servers:
+  - url: https://api.example.com/api/v1
+    description: Production server (example)
+  - url: http://127.0.0.1:8000/api/v1
+    description: Local dev server
+
+# --------------------------------------------------------------------
+# SECURITY / AUTH
+# --------------------------------------------------------------------
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+      description: "Django session cookie (used for browser-authenticated requests)."
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Optional token auth for API clients (if implemented)."
+    apiKeyAdmin:
+      type: apiKey
+      in: header
+      name: X-Admin-API-Key
+      description: "Optional server-to-server admin key for privileged operations (deploy time only)."
+
+  schemas:
+
+    # -------------------------
+    # Generic error schema
+    # -------------------------
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          description: "Machine-readable error code (e.g. invalid_input, not_found, feature_disabled)."
+        message:
+          type: string
+          description: "Human-friendly error message."
+        details:
+          type: object
+          additionalProperties: true
+          description: "Optional extra error details or field-by-field validation errors."
+      required:
+        - code
+        - message
+
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            code:
+              type: string
+              example: invalid_input
+            details:
+              type: object
+              example:
+                field_name: ["must be present", "max length 255"]
+
+    # -------------------------
+    # Pagination wrapper
+    # -------------------------
+    PaginatedList:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: "Total number of items (server-side count, may be approximate for very large datasets)."
+        next:
+          type: string
+          nullable: true
+          description: "URL for next page (or null)."
+        previous:
+          type: string
+          nullable: true
+          description: "URL for previous page (or null)."
+        results:
+          type: array
+          items:
+            type: object
+      required:
+        - count
+        - results
+
+    # -------------------------
+    # Models (trimmed fields + descriptions)
+    # -------------------------
+    Subject:
+      type: object
+      description: "Top-level grouping (folder) for topics and flashcards."
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+          description: "URL-safe unique slug; indexed."
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        order:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - slug
+        - title
+
+    Topic:
+      type: object
+      description: "A topic inside a subject. Index: (subject_id, slug)."
+      properties:
+        id:
+          type: string
+          format: uuid
+        subject:
+          $ref: '#/components/schemas/Subject'
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        order:
+          type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - slug
+        - title
+
+    Question:
+      type: object
+      description: "Flashcard / question entity. answer_type can be 'text' or 'mc'."
+      properties:
+        id:
+          type: string
+          format: uuid
+        topic:
+          $ref: '#/components/schemas/Topic'
+        order:
+          type: integer
+          description: "Ordering for free users. Pagination and ordered endpoints honor this field."
+        prompt:
+          type: string
+        choices:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              text: { type: string }
+        answer:
+          type: string
+          description: "Stored answer (visible to admin; premium UX: shown after exam end)."
+        answer_type:
+          type: string
+          enum: [text, mc]
+          default: text
+        is_active:
+          type: boolean
+          default: true
+        is_premium:
+          type: boolean
+          default: false
+        import_hash:
+          type: string
+          nullable: true
+          description: "Optional import idempotency/hash - recommended for performance."
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - topic
+        - prompt
+        - answer_type
+
+    ReviewFile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        is_premium:
+          type: boolean
+        file_url:
+          type: string
+          format: uri
+          description: "Signed URL in production (S3/R2) or direct media URL in dev."
+        metadata:
+          type: object
+          additionalProperties: true
+        uploaded_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    MockExam:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        duration_minutes:
+          type: integer
+        question_count:
+          type: integer
+        is_premium:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    MockExamStartRequest:
+      type: object
+      properties:
+        mock_exam_id:
+          type: string
+          format: uuid
+        mode:
+          type: string
+          enum: [timed, untimed]
+        format:
+          type: string
+          enum: [random, ordered]
+        as_pdf:
+          type: boolean
+      required:
+        - mock_exam_id
+
+    MockExamSession:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        mock_exam:
+          $ref: '#/components/schemas/MockExam'
+        user:
+          type: string
+        state:
+          type: string
+          enum: [started, in_progress, finished, timed_out]
+        started_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: string
+          format: date-time
+        score:
+          type: number
+          format: float
+
+    AnalyticsRecord:
+      type: object
+      properties:
+        user:
+          type: string
+        question:
+          $ref: '#/components/schemas/Question'
+        correct:
+          type: boolean
+        duration_seconds:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+
+    PaymentTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user:
+          type: string
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+          example: PHP
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        provider:
+          type: string
+        provider_reference:
+          type: string
+        uploaded_proof_url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    WebhookEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+
+# --------------------------------------------------------------------
+# Global parameters (pagination, filtering, headers)
+# --------------------------------------------------------------------
+  parameters:
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+      description: "Page number for pagination (1-based)."
+    page_size:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 200
+      description: "Number of items per page. Server may enforce maximum (200)."
+    ordering:
+      name: ordering
+      in: query
+      schema:
+        type: string
+      description: "Field to order by. Prefix with '-' for descending (e.g. '-order')."
+    topic:
+      name: topic
+      in: query
+      schema:
+        type: string
+      description: "Filter by topic id or slug."
+    subject:
+      name: subject
+      in: query
+      schema:
+        type: string
+      description: "Filter by subject id or slug."
+    lock_state:
+      name: locked
+      in: query
+      schema:
+        type: boolean
+      description: "Filter by locked state where applicable."
+
+# --------------------------------------------------------------------
+# Rate limit headers (informational)
+# --------------------------------------------------------------------
+  responses:
+    RateLimitHeaders:
+      description: "Rate limiting information returned in headers."
+      headers:
+        X-RateLimit-Limit:
+          description: "Max requests in the window"
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: "Requests remaining in current window"
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: "Unix timestamp when the window resets"
+          schema:
+            type: integer
+
+# --------------------------------------------------------------------
+# PATHS
+# --------------------------------------------------------------------
+paths:
+
+  # -------------------------
+  # Subjects (list / detail / create / patch / delete)
+  # -------------------------
+  /subjects/:
+    get:
+      summary: "List subjects (paginated)"
+      operationId: listSubjects
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/ordering'
+      responses:
+        '200':
+          description: "Paginated subjects"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedList'
+                x-result-item: '#/components/schemas/Subject'
+        '429':
+          $ref: '#/components/responses/RateLimitHeaders'
+      tags:
+        - Subjects
+      security: []   # public endpoint (free users can view subjects)
+    post:
+      summary: "Create a subject (admin only)"
+      operationId: createSubject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                slug: { type: string }
+                title: { type: string }
+                description: { type: string }
+                order: { type: integer }
+              required:
+                - title
+      responses:
+        '201':
+          description: "Subject created"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+        '401':
+          description: "Unauthorized (login required)"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+        - apiKeyAdmin: []
+
+  /subjects/{subject_id}/:
+    get:
+      summary: "Retrieve a subject"
+      operationId: getSubject
+      parameters:
+        - name: subject_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Subject detail"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+        '404':
+          description: "Not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security: []
+    patch:
+      summary: "Update a subject (admin only)"
+      operationId: updateSubject
+      parameters:
+        - name: subject_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+                order: { type: integer }
+      responses:
+        '200':
+          description: "Updated subject"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+        '403':
+          description: "Forbidden (insufficient permissions)"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+
+    delete:
+      summary: "Delete a subject (admin only)"
+      operationId: deleteSubject
+      parameters:
+        - name: subject_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: "Deleted"
+        '403':
+          description: "Forbidden"
+      security:
+        - apiKeyAdmin: []
+
+  # -------------------------
+  # Flashcards (ordered / random) - primary read routes for users
+  # -------------------------
+  /flashcards/:
+    get:
+      summary: "List flashcards (supports ordered or random). Free users: ordered only unless premium/unlocked."
+      operationId: listFlashcards
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/ordering'
+        - $ref: '#/components/parameters/subject'
+        - $ref: '#/components/parameters/topic'
+        - name: mode
+          in: query
+          schema:
+            type: string
+            enum: [ordered, random]
+            default: ordered
+          description: "ordered OR random. If random requested, server will verify PREMIUM access or feature flag."
+      responses:
+        '200':
+          description: "Paginated flashcards"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedList'
+                x-result-item: '#/components/schemas/Question'
+        '403':
+          description: "Random mode requested but premium required / denied"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security: []  # ordered view public; random mode gated below
+      x-gating:
+        description: |
+          If the client requests `mode=random`, the server must enforce:
+            - FEATURE_RANDOM_FLASHCARDS_ENABLED must be ON (env or FeatureFlag).
+            - If FEATURE_PREMIUM_LOGIN_REQUIRED is ON, user must be authenticated and have active premium UserAccess.
+            - Otherwise, if FEATURE_PREMIUM_LOGIN_REQUIRED is OFF but FEATURE_RANDOM_FLASHCARDS_ENABLED is ON, anonymous random may be allowed at admin discretion.
+          If checks fail: return 403 with code "premium_required" or "feature_disabled".
+
+    post:
+      summary: "Create a flashcard (ADMIN or import tooling)"
+      operationId: createFlashcard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Question'
+      responses:
+        '201':
+          description: "Question created"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+      security:
+        - apiKeyAdmin: []
+
+  /flashcards/{question_id}/:
+    get:
+      summary: "Retrieve a flashcard"
+      operationId: getFlashcard
+      parameters:
+        - name: question_id
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Flashcard object (answer included only for admin or if allowed by feature gating)"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '404':
+          $ref: '#/components/schemas/Error'
+      security: []
+      x-gating:
+        description: |
+          Answer field visibility rules:
+            - For public/free endpoints, `answer` is omitted unless:
+              * user is admin, OR
+              * FEATURE_ANALYTICS_ENABLED + user has premium access and the request is authorized to see the answer, OR
+              * the request is part of a finished mock exam (Answer revealed after finish).
+            - Backend should redact `answer` for unauthorized clients.
+
+    patch:
+      summary: "Update a flashcard (admin)"
+      operationId: updateFlashcard
+      security:
+        - apiKeyAdmin: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Question'
+      responses:
+        '200':
+          description: "Updated"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+
+    delete:
+      summary: "Delete a flashcard (admin)"
+      operationId: deleteFlashcard
+      security:
+        - apiKeyAdmin: []
+      responses:
+        '204':
+          description: "Deleted"
+
+  # -------------------------
+  # Analytics endpoints
+  # -------------------------
+  /analytics/:
+    get:
+      summary: "Get analytics (per user / per-topic). Premium feature when FEATURE_ANALYTICS_ENABLED."
+      operationId: getAnalytics
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: user
+          in: query
+          schema:
+            type: string
+          description: "Filter by user id (admin-only)."
+        - name: topic
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Analytics list / aggregation"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_questions: { type: integer }
+                  correct: { type: integer }
+                  incorrect: { type: integer }
+                  percent_correct: { type: number }
+        '403':
+          description: "Feature disabled or unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      x-gating:
+        description: |
+          REQUIREMENTS:
+            - FEATURE_ANALYTICS_ENABLED must be ON.
+            - If FEATURE_PREMIUM_LOGIN_REQUIRED is True then calling user must have active premium UserAccess.
+            - Admins may query any user's analytics.
+
+    post:
+      summary: "Update analytics (client submits question attempt)"
+      operationId: postAnalytics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question_id: { type: string }
+                user_id: { type: string }
+                correct: { type: boolean }
+                duration_seconds: { type: number }
+              required:
+                - question_id
+                - user_id
+                - correct
+      responses:
+        '202':
+          description: "Accepted"
+        '403':
+          description: "Premium required or feature disabled"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+
+  # -------------------------
+  # Review Files (uploads + list + signed URLs)
+  # -------------------------
+  /review-files/:
+    get:
+      summary: "List review files (PDFs/images). Premium gating applies."
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: subject
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Paginated review files"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedList'
+                x-result-item: '#/components/schemas/ReviewFile'
+        '403':
+          description: "Feature disabled or premium required"
+      security: []
+      x-gating:
+        description: |
+          REQUIREMENTS:
+            - FEATURE_REVIEW_FILES_ENABLED must be ON.
+            - If the file is premium, user must be authenticated and have premium access.
+            - Signed URLs must be used in production for file delivery (S3/R2 signed URL).
+
+    post:
+      summary: "Upload a review file (admin or premium uploader)"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                file: { type: string, format: binary }
+                is_premium: { type: boolean }
+      responses:
+        '201':
+          description: "Review file created; returns metadata and signed URL if in production"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewFile'
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+
+  /review-files/{file_id}/:
+    get:
+      summary: "Get review file metadata and signed URL (if allowed)"
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Review file metadata and delivery URL"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewFile'
+        '403':
+          description: "Premium required"
+        '404':
+          description: "Not found"
+
+  # -------------------------
+  # Mock exams (start / get session / finish)
+  # -------------------------
+  /mock-exams/:
+    get:
+      summary: "List available mock exams"
+      responses:
+        '200':
+          description: "List of mock exams"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedList'
+                x-result-item: '#/components/schemas/MockExam'
+      security: []
+    post:
+      summary: "Create a new mock exam (admin)"
+      security:
+        - apiKeyAdmin: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockExam'
+      responses:
+        '201':
+          description: "Created"
+
+  /mock-exams/{mock_exam_id}/start/:
+    post:
+      summary: "Start a mock exam session (creates ExamSession, returns session id and expiry)"
+      operationId: startMockExam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockExamStartRequest'
+      responses:
+        '201':
+          description: "Session started"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MockExamSession'
+        '403':
+          description: "Premium required or login required"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      x-gating:
+        description: |
+          REQUIREMENTS:
+            - FEATURE_MOCK_EXAM_ENABLED must be ON.
+            - Mock exams that are premium require user authentication + active premium UserAccess if FEATURE_PREMIUM_LOGIN_REQUIRED is ON.
+
+  /mock-exams/sessions/{session_id}/:
+    get:
+      summary: "Get mock exam session state (questions, remaining time)"
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Session state"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MockExamSession'
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+
+    post:
+      summary: "Finish mock exam (submit answers). Server will auto-close if time expired."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      question_id: { type: string }
+                      answer: { type: string }
+              required:
+                - answers
+      responses:
+        '200':
+          description: "Exam finished — returns score and answer key (if allowed)"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  score: { type: number }
+                  correct_count: { type: integer }
+                  incorrect_count: { type: integer }
+                  answer_key_revealed: { type: boolean }
+        '403':
+          description: "Unauthorized or feature disabled"
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+
+  # -------------------------
+  # Daily Question
+  # -------------------------
+  /daily-question/:
+    get:
+      summary: "Get today's DailyQuestion (simple feature toggle)"
+      responses:
+        '200':
+          description: "Daily question object"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyQuestion'
+      security: []
+      x-gating:
+        description: |
+          FEATURE_DAILY_QUESTION_ENABLED must be ON.
+
+  # -------------------------
+  # Payments (manual proof) + admin approval
+  # -------------------------
+  /payments/manual/:
+    post:
+      summary: "Upload manual payment proof (creates PaymentTransaction record, admin approves later)"
+      operationId: uploadManualPayment
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                user_id: { type: string }
+                amount: { type: number }
+                currency: { type: string }
+                uploaded_file: { type: string, format: binary }
+                provider: { type: string }
+              required:
+                - user_id
+                - amount
+                - uploaded_file
+      responses:
+        '201':
+          description: "Payment transaction created (status pending)"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransaction'
+        '422':
+          description: "Validation error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      x-notes: |
+        - Admin reviews uploaded proof and approves -> backend creates UserAccess record (grant premium).
+        - Ensure file validation (max size, mime check) and do not log PII.
+
+  /payments/{payment_id}/approve/:
+    post:
+      summary: "Admin approves manual payment and grants access"
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [approve, reject]
+                admin_note:
+                  type: string
+      responses:
+        '200':
+          description: "Payment processed; if approved, a UserAccess record is created"
+        '403':
+          description: "Forbidden (admin only)"
+      security:
+        - apiKeyAdmin: []
+
+  # -------------------------
+  # Webhook receiver (future-ready for Xendit / PayMongo)
+  # -------------------------
+  /webhooks/manual/:
+    post:
+      summary: "Webhook endpoint for payment provider (signature verified)."
+      description: |
+        Providers send event payloads here. Server must:
+         - Validate signature header: X-Signature (HMAC SHA256) using provider secret (config).
+         - Use Idempotency-Key header to ensure idempotent processing.
+         - Return 200 on success, 400 or 403 on invalid signature.
+      parameters:
+        - name: X-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookEvent'
+      responses:
+        '200':
+          description: "Accepted"
+        '400':
+          description: "Bad Request / Invalid payload"
+        '403':
+          description: "Signature verification failed"
+      security: []
+
+# --------------------------------------------------------------------
+# EXAMPLES / NOTES / EXTENSIBILITY
+# --------------------------------------------------------------------
+components:
+  examples:
+    SubjectListExample:
+      summary: "Example subjects response"
+      value:
+        count: 2
+        next: null
+        previous: null
+        results:
+          - id: "uuid-sub-1"
+            slug: "engineering"
+            title: "Engineering Review"
+            description: "Engineering board exam review"
+            order: 10
+            created_at: "2025-11-01T12:00:00Z"
+          - id: "uuid-sub-2"
+            slug: "anatomy"
+            title: "Anatomy"
+            description: ""
+            order: 20
+            created_at: "2025-11-02T12:00:00Z"
+
+# --------------------------------------------------------------------
+# IMPLEMENTATION GUIDANCE (not part of OpenAPI but essential)
+# --------------------------------------------------------------------
+x-implementation-guidance:
+  auth:
+    - "Use Django Auth for cookie/session flows. Support bearer tokens for API clients if needed."
+    - "FEATURE_LOGIN_OPTIONAL & FEATURE_PREMIUM_LOGIN_REQUIRED must be respected by endpoints that gate premium features."
+  feature_flags:
+    - "Use helper is_feature_enabled(key) everywhere. Example: if not is_feature_enabled('REVIEW_FILES_ENABLED'): return 403 code='feature_disabled'"
+    - "Top-level flags covered: FEATURE_RANDOM_FLASHCARDS_ENABLED, FEATURE_ANALYTICS_ENABLED, FEATURE_REVIEW_FILES_ENABLED, FEATURE_MOCK_EXAM_ENABLED, FEATURE_LOGIN_OPTIONAL, FEATURE_PREMIUM_LOGIN_REQUIRED, FEATURE_IMPORTS_ENABLED, FEATURE_DAILY_QUESTION_ENABLED"
+  api_throttling:
+    - "Default throttle: anon: 60/hour, user: 600/hour. Return standard 429 responses."
+    - "Include X-RateLimit-* headers."
+  pagination:
+    - "Use PageNumberPagination by default, `page` and `page_size` params. Page size max 200."
+    - "Ensure pagination indices on DB columns for large tables (Question.order, Question.topic_id)."
+  webhooks:
+    - "Validate signatures using provider secret, verify idempotency using Idempotency-Key / event id, persist processed event ids to avoid duplicate processing."
+  payments:
+    - "Manual workflow: user uploads proof -> PaymentTransaction (status: pending) -> Admin reviews -> on approve create UserAccess and set status=approved."
+    - "Store only metadata; do not log sensitive PII. Use signed URLs and short-lived tokens for any file access."
+  mock_exams:
+    - "Implement server-side timer that auto-closes sessions at expires_at and scores them (cron or background worker)."
+    - "Exam sessions should have schema indexes on user_id, mock_exam_id, started_at, expires_at."
+  security:
+    - "Enforce HTTPS; secure cookies; CSRF for form endpoints; sanitize logs; rate-limit heavily used endpoints."
+  scaling:
+    - "Add DB indices for: Question(topic_id, order), Topic(subject_id, slug), Subject(slug)."
+    - "Prepare Redis caching for hot endpoints (subject list, topic list)."
+  rollout_and_rollback:
+    - "Feature rollout: default OFF in env; enable on FeatureFlag for safe gradual rollout by subject/region."
+    - "Rollback: disable flag in FeatureFlag or env; for DB migrations, follow reversible migrations pattern using Django migrations."
+  testing:
+    - "Unit tests must cover ON/OFF feature flag behavior (both branches)."
+    - "Integration tests for webhook signature verification and idempotency."
+
+# --------------------------------------------------------------------
+# CHANGE LOG & VERSIONING NOTES
+# --------------------------------------------------------------------
+x-versioning:
+  - "This spec is v1. Keep forward compatibility by adding new endpoints under `/api/v1/` and deprecating old responses with clear deprecation headers `Deprecation: true` and `Sunset: <date>`."
+  - "Any incompatible change should create `/api/v2/`."
+
+# --------------------------------------------------------------------
+# END OF SPEC
+# --------------------------------------------------------------------

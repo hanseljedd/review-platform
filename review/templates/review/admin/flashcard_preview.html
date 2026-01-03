@@ -1,0 +1,87 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="module">
+    <h1>Import Preview</h1>
+    <p>Please review the parsed questions below before committing.</p>
+
+    {% if errors %}
+    <div style="padding:15px; background:#ffebeb; border:1px solid #ffcccc; color:#d00; margin-bottom:20px;">
+        <h3>Errors Found ({{ errors|length }})</h3>
+        <ul>
+        {% for err in errors %}
+            <li>{{ err }}</li>
+        {% endfor %}
+        </ul>
+        <p><strong>Note:</strong> Blocks with errors will be skipped or cause issues.</p>
+    </div>
+    {% endif %}
+
+    <div style="margin-bottom:20px; background:#f9f9f9; padding:15px; border:1px solid #ddd;">
+        <strong>Total Questions Found:</strong> {{ parsed|length }}
+    </div>
+
+    <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+        <thead>
+            <tr style="background:#eee; text-align:left;">
+                <th style="padding:8px; border:1px solid #ccc;">#</th>
+                <th style="padding:8px; border:1px solid #ccc;">Subject / Topic</th>
+                <th style="padding:8px; border:1px solid #ccc;">Question</th>
+                <th style="padding:8px; border:1px solid #ccc;">Choices</th>
+                <th style="padding:8px; border:1px solid #ccc;">Answer Key</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for p in parsed|slice:":50" %}
+            <tr>
+                <td style="padding:8px; border:1px solid #ccc;">{{ forloop.counter }}</td>
+                <td style="padding:8px; border:1px solid #ccc;">
+                    <strong>{{ p.subject_title }}</strong><br>
+                    <small>{{ p.topic_title }}</small>
+                </td>
+                <td style="padding:8px; border:1px solid #ccc;">{{ p.prompt|truncatechars:100 }}</td>
+                <td style="padding:8px; border:1px solid #ccc;">
+                    {% if p.choices %}
+                        <ul style="margin:0; padding-left:15px;">
+                        {% for c in p.choices %}
+                            <li><strong>{{ c.key }})</strong> {{ c.text }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <span style="color:#999;">(Text Answer)</span>
+                    {% endif %}
+                </td>
+                <td style="padding:8px; border:1px solid #ccc; font-weight:bold; color:green;">
+                    {{ p.answer_key }}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5" style="padding:20px; text-align:center; color:#999;">No valid questions parsed.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% if parsed|length > 50 %}
+    <p style="color:#666; font-style:italic;">Showing first 50 items only...</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <!-- Pass original data back -->
+        <input type="hidden" name="paste_text" value="{{ original_paste }}">
+        <input type="hidden" name="subject_id" value="{{ subject_id|default:'' }}">
+        <input type="hidden" name="topic_id" value="{{ topic_id|default:'' }}">
+        
+        <input type="hidden" name="commit" value="1">
+
+        <div class="submit-row">
+            <a href="javascript:history.back()" class="button" style="padding:10px 20px; margin-right:10px;">Go Back</a>
+            {% if parsed %}
+            <input type="submit" value="Confirm & Import {{ parsed|length }} Items" class="default" style="padding:10px 20px; font-weight:bold; background:#417690; color:white; border:none; cursor:pointer;">
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

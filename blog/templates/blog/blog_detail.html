@@ -1,0 +1,137 @@
+{% extends "review/base.html" %}
+{% load static %}
+
+{% block title %}{{ post.seo_title }} - Boardflash{% endblock %}
+
+{% block head_extra %}
+<meta name="description" content="{{ post.seo_description }}">
+<!-- Open Graph -->
+<meta property="og:title" content="{{ post.seo_title }}">
+<meta property="og:description" content="{{ post.seo_description }}">
+{% if post.cover_image %}
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ post.cover_image.url }}">
+{% endif %}
+<meta property="og:type" content="article">
+
+<style>
+  .article-container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px;
+    font-family: 'Georgia', serif; /* Classic blog serif */
+  }
+  .article-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .article-title {
+    font-family: 'Inter', sans-serif; /* Modern title */
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .article-meta {
+    font-family: 'Inter', sans-serif;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+  }
+  .article-cover {
+    width: 100%;
+    max-height: 500px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 48px;
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+  }
+  .article-body {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: #e2e8f0;
+  }
+  .article-body p { margin-bottom: 24px; }
+  .article-body h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 48px;
+    margin-bottom: 24px;
+  }
+  .article-body h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-top: 32px;
+    margin-bottom: 16px;
+  }
+  .article-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 24px 0;
+  }
+  .article-body ul, .article-body ol {
+    margin-bottom: 24px;
+    padding-left: 24px;
+  }
+  .article-body li { margin-bottom: 8px; }
+  .article-body blockquote {
+    border-left: 4px solid var(--accent);
+    padding-left: 16px;
+    margin-left: 0;
+    margin-right: 0;
+    color: #cbd5e1;
+    font-style: italic;
+  }
+  .article-body mark {
+    background-color: #fef08a; /* Yellow highlight */
+    color: #000;
+    padding: 0 2px;
+    border-radius: 2px;
+  }
+  
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    font-family: 'Inter', sans-serif;
+  }
+  .back-link:hover { color: var(--accent); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="article-container">
+  <a href="{% url 'blog:blog_list' %}" class="back-link">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    Back to Blog
+  </a>
+
+  <header class="article-header">
+    <h1 class="article-title">{{ post.title }}</h1>
+    <div class="article-meta">
+      <span>{{ post.published_at|date:"F j, Y" }}</span>
+      {% if post.author %}
+      <span>•</span>
+      <span>{{ post.author.username }}</span>
+      {% endif %}
+    </div>
+  </header>
+
+  {% if post.cover_image %}
+  <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="article-cover">
+  {% endif %}
+
+  <div class="article-body">
+    {{ post.content|safe }}
+  </div>
+</div>
+{% endblock %}

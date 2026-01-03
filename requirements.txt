@@ -1,0 +1,15 @@
+Django>=5.0,<6
+djangorestframework>=3.15
+gunicorn
+whitenoise
+django-environ
+psycopg2-binary
+dj-database-url
+django-storages[boto3]
+boto3
+python-dotenv
+redis
+django-cors-headers
+sentry-sdk
+django-ratelimit
+Pillow

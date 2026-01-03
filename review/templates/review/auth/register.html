@@ -1,0 +1,190 @@
+{% extends "review/base.html" %}
+{% load static %}
+
+{% block head_extra %}
+<style>
+  /* Reuse Login Styles */
+  .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 64px);
+    padding: 24px;
+  }
+
+  .auth-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 450px; /* Slightly wider for register */
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+
+  .auth-logo {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 8px;
+    display: block;
+    text-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+  }
+
+  .auth-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  
+  .auth-subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: left;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .form-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .form-input:focus {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .help-text {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  
+  .help-text ul {
+    margin: 4px 0 0 16px;
+    padding: 0;
+  }
+
+  .btn-auth {
+    background: var(--accent);
+    color: #000;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 16px;
+  }
+
+  .btn-auth:hover {
+    background: var(--accent-hover);
+    transform: scale(1.02);
+  }
+
+  .auth-footer {
+    margin-top: 24px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .auth-link {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  
+  .auth-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Error messages */
+  .error-list {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--danger);
+    color: #fca5a5;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    text-align: left;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="auth-card">
+    <a href="/" class="auth-logo">Boardflash</a>
+    <h1 class="auth-title">Create Account</h1>
+    <p class="auth-subtitle">
+      Join the premium community to unlock random mode, mock exams, and more.
+    </p>
+
+    {% if form.errors %}
+      <div class="error-list">
+        {% for field, errors in form.errors.items %}
+          {% for error in errors %}
+            <p>{{ error }}</p>
+          {% endfor %}
+        {% endfor %}
+        {% if form.non_field_errors %}
+          {% for error in form.non_field_errors %}
+             <p>{{ error }}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      
+      {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+        <input type="{{ field.field.widget.input_type }}" 
+               name="{{ field.name }}" 
+               id="{{ field.id_for_label }}" 
+               class="form-input" 
+               {% if field.field.required %}required{% endif %}>
+        {% if field.help_text %}
+          <div class="help-text">{{ field.help_text|safe }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      <button type="submit" class="btn-auth">Sign Up</button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a href="{% url 'review:login' %}" class="auth-link">Log In</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

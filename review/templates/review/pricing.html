@@ -1,0 +1,339 @@
+{% extends "review/base.html" %}
+{% load static %}
+
+{% block page_title %}Pricing — Boardflash: Flashcards, Mock Exams, Review Files{% endblock %}
+{% block page_description %}Free plan plus Premium at ₱100/month or ₱600/year. Upgrade via GCash upload.{% endblock %}
+{% block og_title %}Pricing — Boardflash: Flashcards, Mock Exams, Review Files{% endblock %}
+{% block og_description %}Free plan plus Premium at ₱100/month or ₱600/year. Upgrade via GCash upload.{% endblock %}
+{% block twitter_title %}Pricing — Boardflash: Flashcards, Mock Exams, Review Files{% endblock %}
+{% block twitter_description %}Free plan plus Premium at ₱100/month or ₱600/year. Upgrade via GCash upload.{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'review/css/pricing.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="pricing-page">
+  <!-- Top Glow -->
+  <div class="top-glow"></div>
+
+  <!-- Hero Section -->
+  <header class="pricing-hero fade-in-up">
+    <h1 class="pricing-title">Pricing</h1>
+    <p class="pricing-subtitle">Start specifically for free. Upgrade to unlock your full potential.</p>
+    
+    <!-- Billing Toggle -->
+    <div class="billing-toggle-container">
+      <span class="billing-label">Monthly</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="billing-toggle">
+        <span class="toggle-slider"></span>
+      </label>
+      <span class="billing-label active">Yearly <span class="badge-save">Save 50%</span></span>
+    </div>
+  </header>
+
+  <!-- Pricing Cards -->
+  <div class="pricing-grid fade-in-up delay-1">
+    
+    <!-- Free Tier -->
+    <div class="pricing-card">
+      <div class="card-header">
+        <h2 class="card-title">Free</h2>
+        <p class="card-desc">Essential study tools</p>
+      </div>
+      <div class="card-price">
+        <span class="currency">{{ currency_symbol }}</span>
+        <span class="amount">0</span>
+        <span class="period">/ month</span>
+      </div>
+      <div class="card-divider"></div>
+      <ul class="feature-list">
+        <li>
+          <svg class="icon-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          Access all flashcards
+        </li>
+        <li>
+          <svg class="icon-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          Ordered study mode
+        </li>
+        <li>
+          <svg class="icon-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          Progress syncing
+        </li>
+        <li class="disabled">
+          <svg class="icon-x" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          No random mode
+        </li>
+        
+      </ul>
+      <a href="/" class="btn btn-outline full-width">Start Learning</a>
+    </div>
+
+    <!-- Premium Tier -->
+    <div class="pricing-card featured">
+      <div class="card-glow"></div>
+      <div class="card-header">
+        <div class="header-top">
+          <h2 class="card-title">Premium</h2>
+          <span class="badge-popular">POPULAR</span>
+        </div>
+        <p class="card-desc">Master your exams</p>
+      </div>
+      <div class="card-price">
+        <span class="currency">{{ currency_symbol }}</span>
+        <span class="amount" id="price-display">{{ price_yearly_premium }}</span>
+        <span class="period" id="period-display">/ year</span>
+      </div>
+      <div class="card-divider"></div>
+      <div class="feature-label">Everything in Free, plus:</div>
+      <ul class="feature-list">
+        <li>
+          <svg class="icon-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          Randomized flashcards
+        </li>
+        <li>
+          <svg class="icon-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"></path></svg>
+          Reviewers to Flashcard Services
+        </li>
+        <li>
+          <svg class="icon-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Premium review files
+        </li>
+        <li>
+          <svg class="icon-check" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          Mock exams & timers
+        </li>
+      </ul>
+      {% if is_premium %}
+        <button class="btn btn-primary full-width" disabled>Current Plan</button>
+      {% else %}
+        <a href="{% url 'review:upload_payment' %}" class="btn btn-primary full-width">Upgrade via GCash</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Why Premium Section (Toolkit) -->
+  <section class="toolkit-section fade-in-up delay-2">
+    <div class="toolkit-header">
+      <h2>Why upgrade to Premium?</h2>
+    </div>
+    <div class="toolkit-grid">
+      <!-- Card 1: Random Mode -->
+      <div class="toolkit-card">
+        <div class="toolkit-visual visual-random">
+          <div class="visual-circle"></div>
+          <div class="visual-dots"></div>
+        </div>
+        <div class="toolkit-content">
+          <div class="toolkit-icon icon-yellow"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/></svg></div>
+          <h3>Random Mode</h3>
+          <p>Simulate real exam conditions by shuffling questions to test true retention, not just memorized order.</p>
+        </div>
+      </div>
+
+      <!-- Card 2: Reviewers to Flashcard Services -->
+      <div class="toolkit-card">
+        <div class="toolkit-visual visual-analytics">
+           <div class="mock-stats-bar"><span>Reviewers to Flashcard Services</span><div class="bar-fill" style="width:60%"></div></div>
+        </div>
+        <div class="toolkit-content">
+          <div class="toolkit-icon icon-white"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg></div>
+          <h3>Reviewers to Flashcard Services</h3>
+          <p>Send your reviewers and I will turn it to flashcards only you can access.</p>
+        </div>
+      </div>
+
+      <!-- Card 3: Review Files -->
+      <div class="toolkit-card">
+        <div class="toolkit-visual visual-files">
+          <div class="mock-file-grid">
+            <div class="mock-file"></div><div class="mock-file"></div><div class="mock-file"></div>
+          </div>
+        </div>
+        <div class="toolkit-content">
+          <div class="toolkit-icon icon-white"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l10 9-10 9-10-9 10-9z"/></svg></div>
+          <h3>Review Files</h3>
+          <p>Access high-yield cheat sheets, diagrams, and summary PDFs exclusively available to premium users.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq-section fade-in-up delay-3">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h3>What’s included in the Free plan?</h3>
+        <p>The Free plan gives you access to all flashcards in "Ordered Mode" and progress syncing. It's perfect for linear studying and covering the basics.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Why is Random Mode premium?</h3>
+        <p>Randomization requires more server resources and is a powerful tool for exam simulation. It prevents "positional memory" bias.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What payment methods do you accept?</h3>
+        <p>We primarily accept GCash. Simply upload your receipt after transfer to activate your account.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What is your refund policy?</h3>
+        <p>We offer a 7-day money-back guarantee. If you're not satisfied with Premium features, contact us within 7 days for a full refund.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Can I cancel anytime?</h3>
+        <p>Yes. You will retain access until the end of your billing cycle. We do not offer partial refunds for unused time.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Do you offer student discounts?</h3>
+        <p>Our pricing is designed to be student-friendly by default. Follow our social media for seasonal promo codes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison Table -->
+  <section class="comparison-section fade-in-up delay-3">
+    <h2 class="section-title">Compare Plans</h2>
+    <div class="table-responsive">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Free</th>
+            <th>Premium</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Flashcard Access</td>
+            <td><span class="check">●</span></td>
+            <td><span class="check">●</span></td>
+          </tr>
+          <tr>
+            <td>Study Modes</td>
+            <td>Ordered</td>
+            <td>Ordered & Random</td>
+          </tr>
+          <tr>
+            <td>Progress Sync</td>
+            <td><span class="check">●</span></td>
+            <td><span class="check">●</span></td>
+          </tr>
+          <tr>
+            <td>Reviewers to Flashcard Services</td>
+            <td><span class="dash">—</span></td>
+            <td><span class="check">●</span></td>
+          </tr>
+          <tr>
+            <td>Mock Exams</td>
+            <td><span class="dash">—</span></td>
+            <td><span class="check">●</span></td>
+          </tr>
+          <tr>
+            <td>Review Files (PDFs)</td>
+            <td><span class="dash">—</span></td>
+            <td><span class="check">●</span></td>
+          </tr>
+           <tr>
+            <td>Exam Timer</td>
+            <td><span class="dash">—</span></td>
+            <td><span class="check">●</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+  // Simple pricing toggle logic
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('billing-toggle');
+    const priceDisplay = document.getElementById('price-display');
+    const periodDisplay = document.getElementById('period-display');
+    const monthlyPrice = "{{ price_monthly_premium }}";
+    const yearlyPrice = "{{ price_yearly_premium }}"; 
+    
+    // Toggle Logic
+    toggle.checked = true;
+
+    function updatePrice() {
+      if (toggle.checked) {
+        priceDisplay.textContent = yearlyPrice;
+        periodDisplay.textContent = "/ year";
+      } else {
+        priceDisplay.textContent = monthlyPrice;
+        periodDisplay.textContent = "/ month";
+      }
+    }
+
+    toggle.addEventListener('change', updatePrice);
+    updatePrice(); 
+  });
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ request.scheme }}://{{ request.get_host }}/" },
+    { "@type": "ListItem", "position": 2, "name": "Pricing", "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'review:pricing' %}" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What’s included in the Free plan?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Access to all flashcards in Ordered Mode and progress syncing for linear studying."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why is Random Mode premium?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Randomization simulates exam conditions and requires more server resources, helping prevent positional memory bias."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What payment methods do you accept?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We primarily accept GCash. Upload your receipt to activate Premium access."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is your refund policy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "7-day money-back guarantee if you are not satisfied with Premium features."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I cancel anytime?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. You retain access until the end of your billing cycle; no partial refunds for unused time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you offer student discounts?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Pricing is student-friendly; watch social channels for seasonal promo codes."
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}

@@ -1,0 +1,321 @@
+{% extends "review/base.html" %}
+{% load static %}
+{% block page_title %}About & Policies — Boardflash{% endblock %}
+{% block page_description %}Learn about Boardflash, our terms, privacy, and payment verification process.{% endblock %}
+{% block og_title %}About & Policies — Boardflash{% endblock %}
+{% block og_description %}Learn about Boardflash, our terms, privacy, and payment verification process.{% endblock %}
+{% block twitter_title %}About & Policies — Boardflash{% endblock %}
+{% block twitter_description %}Learn about Boardflash, our terms, privacy, and payment verification process.{% endblock %}
+{% block head_extra %}
+<style>
+.info-container{max-width:900px;margin:0 auto;padding:24px}
+.info-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.info-tab{padding:12px 16px;border:1px solid var(--border);border-radius:10px;background:#ffffff;color:#111827;cursor:pointer;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,0.06);transition:background .2s ease,border-color .2s ease,box-shadow .2s ease,transform .1s ease}
+.info-tab:hover{background:#f7f7f7;border-color:var(--accent);box-shadow:0 2px 6px rgba(0,0,0,0.08)}
+.info-tab:focus{outline:none;box-shadow:0 0 0 3px rgba(34,197,94,0.35)}
+.info-tab.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-dark);box-shadow:0 2px 8px rgba(0,0,0,0.12)}
+.info-section{display:none}
+.info-section.active{display:block}
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.section-card h2{margin:0 0 8px 0;font-size:20px}
+.section-card h3{margin:16px 0 6px 0;font-size:16px}
+.section-card p{margin:6px 0;line-height:1.6}
+.bullet-list{margin:8px 0 8px 20px}
+.bullet-list li{margin:6px 0}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ request.scheme }}://{{ request.get_host }}/" },
+    { "@type": "ListItem", "position": 2, "name": "About & Policies", "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'review:info' %}" }
+  ]
+}
+</script>
+{% endblock %}
+{% block content %}
+<div class="info-container">
+  <h1>About & Policies</h1>
+  <div class="info-tabs" id="info-tabs">
+    <button class="info-tab active" data-target="about">About Us</button>
+    <button class="info-tab" data-target="tos">Terms of Service</button>
+    <button class="info-tab" data-target="privacy">Privacy Policy</button>
+  </div>
+
+  <div id="about" class="info-section active">
+    <div class="section-card">
+      <h2>About This Platform</h2>
+      <p>Preparing for board exams is not easy — and it shouldn’t feel inaccessible, overwhelming, or overly expensive.</p>
+      <p>This platform was created to provide clear, organized, and practical review materials designed especially for students preparing for Philippine board examinations. The goal is simple: help you review more effectively, at your own pace.</p>
+
+      <h3>Why This Platform Exists</h3>
+      <p>Many review resources today are either:</p>
+      <ul class="bullet-list">
+        <li>Too expensive</li>
+        <li>Too cluttered</li>
+        <li>Hard to access</li>
+        <li>Overloaded with unnecessary features</li>
+      </ul>
+      <p>This platform focuses on what actually helps during review:</p>
+      <ul class="bullet-list">
+        <li>Structured flashcards</li>
+        <li>Focused questions</li>
+        <li>Simple explanations</li>
+        <li>Straightforward practice tools</li>
+      </ul>
+      <p>No distractions. No pressure. Just tools built for review.</p>
+
+      <h3>Who This Is For</h3>
+      <p>This website is mainly built for:</p>
+      <ul class="bullet-list">
+        <li>Board exam takers</li>
+        <li>Students reviewing core subjects</li>
+        <li>Graduates refreshing key concepts</li>
+      </ul>
+      <p>The current focus is on board exam–related content, with plans to expand to other exams and subjects in the future.</p>
+
+      <h3>Accessibility & Affordability</h3>
+      <p>Reviewing should be accessible to everyone. That’s why:</p>
+      <ul class="bullet-list">
+        <li>Most flashcards are available for free</li>
+        <li>Premium features are kept affordable</li>
+        <li>Payments are handled simply and transparently</li>
+        <li>You can review even without creating an account</li>
+      </ul>
+      <p>The aim is to support students — not to lock learning behind unnecessary barriers.</p>
+
+      <h3>Built With Students in Mind</h3>
+      <p>This platform is independently developed and maintained, with close attention to:</p>
+      <ul class="bullet-list">
+        <li>Ease of use</li>
+        <li>Clear layouts</li>
+        <li>Fast loading</li>
+        <li>Desktop, tablet, and mobile support</li>
+      </ul>
+      <p>Features are added carefully to make sure they remain helpful, not overwhelming.</p>
+
+      <h3>An Honest Reminder</h3>
+      <p>This platform is a review aid, not a guarantee. While the materials are designed to help reinforce understanding and practice, passing any exam still depends on your own preparation, discipline, and effort.</p>
+      <p>This site is here to support your journey — not to replace it.</p>
+
+      <h3>Moving Forward</h3>
+      <p>The platform will continue to improve over time, with:</p>
+      <ul class="bullet-list">
+        <li>Expanded subjects</li>
+        <li>More practice tools</li>
+        <li>Better study flow</li>
+      </ul>
+      <p>Feedback from users is always welcome and helps guide future updates.</p>
+      <p>Thank you for being part of this learning journey. Study well, stay focused, and keep going. 💪</p>
+    </div>
+  </div>
+
+  <div id="tos" class="info-section">
+    <div class="section-card">
+      <h2>Terms of Service</h2>
+      <p><em>Last updated: December 15, 2025</em></p>
+
+      <h3>Welcome</h3>
+      <p>Welcome to our review platform. By accessing or using this website, you agree to the Terms of Service outlined below. These terms are meant to keep the platform fair, safe, and useful for everyone. If you do not agree with these terms, please do not use the website.</p>
+
+      <h3>1. About the Platform</h3>
+      <p>This website provides study and review materials such as flashcards, review files, and mock exams intended to help users prepare for board and licensure examinations.</p>
+      <p>The platform offers free features available without logging in and premium features available to paid users.</p>
+
+      <h3>2. Free and Premium Access</h3>
+      <h4>Free Access</h4>
+      <ul class="bullet-list">
+        <li>View and study flashcards in ordered mode</li>
+        <li>Access publicly available review content</li>
+      </ul>
+      <p>Free access does not include premium features.</p>
+      <h4>Premium Access</h4>
+      <ul class="bullet-list">
+        <li>Additional review materials (PDFs, images)</li>
+        <li>Mock exams and timed assessments</li>
+      </ul>
+      <p>Premium access is granted only after payment verification.</p>
+
+      <h3>3. Acceptable Use</h3>
+      <p>You agree to use the platform responsibly and lawfully. You must not:</p>
+      <ul class="bullet-list">
+        <li>Copy, scrape, or redistribute content without permission</li>
+        <li>Attempt to bypass premium access or security features</li>
+        <li>Upload malicious files or harmful content</li>
+        <li>Interfere with site performance or other users</li>
+        <li>Use the platform for cheating, impersonation, or fraud</li>
+      </ul>
+
+      <h3>Intellectual Property & Content Use</h3>
+      <p>All content available on this platform — including but not limited to flashcards, questions, explanations, mock exams, review files, text, images, and website design — is owned by or licensed to this platform unless otherwise stated.</p>
+      <p>You are allowed to use the content for personal study and review purposes only.</p>
+      <ul class="bullet-list">
+        <li>Do not copy, reproduce, or redistribute the content publicly</li>
+        <li>Do not share premium or paid content with others</li>
+        <li>Do not sell, resell, or commercially use any part of the content</li>
+        <li>Do not upload the content to other websites, platforms, or groups without permission</li>
+      </ul>
+      <p>Any unauthorized use of the content may result in suspension or termination of access, removal of uploaded materials, or other appropriate actions to protect the platform and its users.</p>
+      <p>This section is intended to protect the effort and work put into creating the review materials while still allowing students to freely use them for learning.</p>
+
+      <h3>4. Educational Purpose Only</h3>
+      <ul class="bullet-list">
+        <li>All content on this platform is provided for review and educational purposes only</li>
+        <li>The platform does not represent any official examination body</li>
+        <li>Content may not fully match actual exam questions or formats</li>
+        <li>Studying on this platform does not guarantee passing any exam</li>
+      </ul>
+      <p>Users remain responsible for their own preparation and exam performance.</p>
+
+      <h3>5. Accounts and Access Control</h3>
+      <p>Some features require creating an account. You are responsible for keeping your login credentials secure and all activity performed under your account.</p>
+      <p>We reserve the right to suspend or terminate accounts involved in abuse, misuse, or violations of these terms, and to restrict access to features when necessary to protect the platform.</p>
+
+      <h3>6. Payments and Premium Features</h3>
+      <p>Payments are handled manually during the current phase.</p>
+      <ul class="bullet-list">
+        <li>Proof of payment may be required</li>
+        <li>Premium access is granted only after verification</li>
+        <li>Payments are generally non-refundable unless stated otherwise</li>
+        <li>Access may be revoked if payment submissions are fraudulent or invalid</li>
+      </ul>
+
+      <h3>7. Content Ownership</h3>
+      <p>All content on this platform, including questions, review materials, mock exams, design, and system features, is owned by or licensed to the platform unless otherwise stated. You may use the content only for personal review.</p>
+
+      <h3>8. Service Availability</h3>
+      <ul class="bullet-list">
+        <li>Access may occasionally be interrupted for maintenance or updates</li>
+        <li>Features may change, improve, or be removed over time</li>
+        <li>We do not guarantee uninterrupted or error-free service</li>
+      </ul>
+
+      <h3>9. Limitation of Liability</h3>
+      <ul class="bullet-list">
+        <li>The platform is provided “as is”</li>
+        <li>We are not liable for exam results, lost study time, or personal outcomes</li>
+        <li>We are not responsible for indirect or consequential damages</li>
+      </ul>
+      <p>Nothing in these terms limits rights that cannot be excluded under Philippine law.</p>
+
+      <h3>10. Changes to These Terms</h3>
+      <p>We may update these Terms of Service when needed. Updates will be posted on this page. Continued use of the platform means acceptance of the updated terms.</p>
+
+      <h3>11. Contact Information</h3>
+      <p>If you have questions about these Terms of Service, you may contact us at:</p>
+      <ul class="bullet-list">
+        <li>Email: your-email@example.com</li>
+        <li>Website: your-domain.com</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="privacy" class="info-section">
+    <div class="section-card">
+      <h2>Privacy Policy</h2>
+      <p><em>Last updated: December 15, 2025</em></p>
+
+      <h3>Welcome</h3>
+      <p>This Privacy Policy explains how we collect, use, store, and protect your information when you use our review platform. The site can be used for free without logging in, and some features are available only to logged-in or premium users.</p>
+
+      <h3>1. Information We Collect</h3>
+      <p>We collect only what is necessary to provide and improve our services.</p>
+      <h4>Information You Provide</h4>
+      <ul class="bullet-list">
+        <li>Account information (logged-in users): username, email address</li>
+        <li>Payment-related uploads (premium users): proof of payment images</li>
+        <li>Uploaded content (admin/premium features): review files (PDFs, images), mock exam files</li>
+      </ul>
+
+      <h3>2. How We Use Your Information</h3>
+      <ul class="bullet-list">
+        <li>Provide access to free and premium features</li>
+        <li>Save progress for logged-in users</li>
+        <li>Enable premium features such as review files and mock exams</li>
+        <li>Verify payments submitted manually</li>
+        <li>Improve platform performance and reliability</li>
+        <li>Ensure system security and prevent abuse</li>
+      </ul>
+
+      <h3>3. Analytics and Tracking</h3>
+      <ul class="bullet-list">
+        <li>Simple internal tracking to understand feature usage</li>
+        <li>No advertising analytics</li>
+        <li>No third-party ad tracking</li>
+        <li>No profiling for marketing purposes</li>
+      </ul>
+
+      <h3>4. Payments</h3>
+      <p>Payments are handled manually during the initial phase.</p>
+      <ul class="bullet-list">
+        <li>Users may upload proof of payment</li>
+        <li>Uploaded payment proofs are viewed only by authorized administrators</li>
+        <li>Payment data is used solely for verification and access activation</li>
+        <li>We do not store credit card numbers or sensitive banking credentials</li>
+      </ul>
+
+      <h3>5. File Storage</h3>
+      <p>We store uploaded files securely for platform use, including review materials, mock exams, and payment proof images.</p>
+      <ul class="bullet-list">
+        <li>Accessible only to authorized users</li>
+        <li>Protected using reasonable security measures</li>
+        <li>Stored only as long as needed for their intended purpose</li>
+      </ul>
+
+      <h3>6. Data Retention</h3>
+      <ul class="bullet-list">
+        <li>Account and progress data: while your account is active</li>
+        <li>Payment records: as required for verification and records</li>
+        <li>Uploaded files: until removed by the admin or no longer needed</li>
+      </ul>
+      <p>Inactive or unnecessary data may be securely deleted.</p>
+
+      <h3>7. Your Rights (PH Data Privacy Act)</h3>
+      <ul class="bullet-list">
+        <li>Access your personal data</li>
+        <li>Request correction of inaccurate data</li>
+        <li>Request deletion of your data (subject to legal or operational limits)</li>
+        <li>Ask how your data is being used</li>
+      </ul>
+      <p>You may contact us anytime regarding these rights.</p>
+
+      <h3>8. Data Security</h3>
+      <ul class="bullet-list">
+        <li>Secure connections (HTTPS)</li>
+        <li>Access controls</li>
+        <li>Sanitized logs</li>
+        <li>Limited admin access to sensitive uploads</li>
+      </ul>
+      <p>No system is 100% secure, but we actively work to protect your information.</p>
+
+      <h3>9. Changes to This Policy</h3>
+      <p>We may update this Privacy Policy when needed. Any updates will be posted on this page with a revised date. Continued use of the platform means you accept the updated policy.</p>
+
+      <h3>10. Contact Us</h3>
+      <p>If you have questions, concerns, or requests about your data or this policy, you may contact us at:</p>
+      <ul class="bullet-list">
+        <li>Email: your-email@example.com</li>
+        <li>Website: your-domain.com</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+  var tabs=document.querySelectorAll('.info-tab');
+  var sections=document.querySelectorAll('.info-section');
+  function activate(target){
+    tabs.forEach(function(t){t.classList.toggle('active',t.getAttribute('data-target')===target)});
+    sections.forEach(function(s){s.classList.toggle('active',s.id===target)});
+  }
+  tabs.forEach(function(t){
+    t.addEventListener('click',function(){
+      activate(t.getAttribute('data-target'));
+    });
+  });
+})();
+</script>
+{% endblock %}

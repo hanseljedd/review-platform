@@ -1,0 +1,841 @@
+{% extends "review/base.html" %}
+{% load static %}
+
+{% block page_title %}Boardflash — Flashcards & Mock Exams{% endblock %}
+{% block page_description %}Free flashcards plus premium review files and mock exams. Upgrade via GCash upload.{% endblock %}
+{% block og_title %}Boardflash — Flashcards & Mock Exams{% endblock %}
+{% block og_description %}Free flashcards plus premium review files and mock exams. Upgrade via GCash upload.{% endblock %}
+{% block twitter_title %}Boardflash — Flashcards & Mock Exams{% endblock %}
+{% block twitter_description %}Free flashcards plus premium review files and mock exams. Upgrade via GCash upload.{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'review/css/landing.css' %}">
+<link rel="stylesheet" href="{% static 'review/css/landing_mobile.css' %}">
+<style>
+/* Search Wrapper */
+.search-wrapper {
+  position: relative;
+  margin-left: auto; /* Push to the right */
+  margin-right: 2px;
+}
+/* Search Bar Styles */
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 200px; /* Reduced width */
+  height: 30px; /* Smaller height to match text */
+  overflow: hidden;
+}
+.search-input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem; /* Smaller font */
+  padding: 0 35px 0 0; /* Padding right for icon space, 0 left */
+  box-sizing: border-box;
+  cursor: pointer;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  text-align: right; /* Text comes from right */
+  opacity: 0; /* Hide placeholder "Search..." text initially */
+  transition: opacity 0.3s;
+}
+.search-input:focus {
+  cursor: auto;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;
+  opacity: 1; /* Show text when focused */
+}
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+}
+.search-input::selection {
+  background: rgba(0, 0, 0, 0.3);
+}
+/* Hide default search clear button (cross) */
+.search-input::-webkit-search-decoration,
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-results-button,
+.search-input::-webkit-search-results-decoration {
+  display: none;
+  -webkit-appearance: none;
+}
+/* SVG Animation Container */
+.search-svg-container {
+  position: absolute;
+  top: 0;
+  right: 0; /* Align to right */
+  left: auto; /* Unset left */
+  width: 200px; /* Match container width */
+  height: 100%;
+  pointer-events: none;
+}
+.search-svg {
+  width: 100%;
+  height: 100%;
+  /* Adjusted transform to position icon at far right initially */
+  /* The original viewBox is -20 -20 1000 150. */
+  /* We want the loop (icon) visible on the right. */
+  /* Original translate was -125px to center loop. */
+  /* Now we want loop at right end. */
+  transform: translate3d(-25px, 0, 0); /* Adjusted for right alignment */
+  transition: 0.5s;
+}
+.search-input:valid + .search-svg-container .search-svg,
+.search-input:focus + .search-svg-container .search-svg {
+  transform: translate3d(0, 0, 0);
+}
+.search-path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 15; /* Thicker stroke relative to smaller size */
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 363, 961;
+  stroke-dashoffset: 0;
+  transition: 0.5s;
+}
+.search-input:focus + .search-svg-container .search-path {
+  stroke-dasharray: 961, 363;
+  stroke-dashoffset: -363;
+}
+
+/* Dropdown tweaks */
+.search-results-dropdown {
+  position: absolute;
+  top: 100%; /* Below the wrapper */
+  right: 0;
+  width: 320px;
+  background: #1e293b;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+  z-index: 1000;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.search-results-dropdown.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.search-result-item {
+  display: block;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+.sr-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.sr-title {
+  color: #f1f5f9;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.sr-type {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+.type-subject { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.type-flashcard { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+.type-blog { background: rgba(244, 114, 182, 0.2); color: #f472b6; }
+.type-formula { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.sr-meta {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sr-empty {
+  padding: 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+</style>
+{% if jsonld_itemlist %}
+<script type="application/ld+json" nonce="{{ request.csp_nonce }}">
+  {{ jsonld_itemlist|safe }}
+</script>
+{% endif %}
+{{ preview_data|json_script:"preview-data" }}
+{% endblock %}
+
+{% block content %}
+<div class="spotify-shell">
+  
+  <!-- Middle: Main Scrollable View -->
+  <div class="main-view">
+    
+    <!-- Top Bar (Sticky) -->
+    <header class="top-bar">
+      <div class="top-bar-bg"></div>
+      
+      <!-- BoardFlash Header Content -->
+      <div class="header-content">
+        <div class="banner-brand">
+          <a href="{% url 'review:landing' %}" class="banner-text" style="text-decoration: none; color: inherit;">Boardflash - Flashcards & Mock Exams</a>
+        </div>
+        <div class="banner-actions">
+          <button class="btn-icon" title="Share">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+          </button>
+          <a href="{% url 'review:pricing' %}" class="btn-upgrade-banner">Upgrade</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Scrollable Content Area -->
+    <div class="content-scroll">
+      <!-- Gradient Background -->
+      <div class="hero-gradient"></div>
+
+      <!-- Infinite Scroll Ticker -->
+      <section class="section-ticker">
+        <div class="ticker-wrap">
+          <div class="ticker-track">
+            <span class="ticker-text green">YOU WILL PASS THE EXAMINATION &bull; </span>
+            <span class="ticker-text yellow">GO GET THAT LICENSE &bull; </span>
+            <span class="ticker-text green">YOU WILL PASS THE EXAMINATION &bull; </span>
+            <span class="ticker-text yellow">GO GET THAT LICENSE &bull; </span>
+            <span class="ticker-text green">YOU WILL PASS THE EXAMINATION &bull; </span>
+            <span class="ticker-text yellow">GO GET THAT LICENSE &bull; </span>
+            
+            <span class="ticker-text green">YOU WILL PASS THE EXAMINATION &bull; </span>
+            <span class="ticker-text yellow">GO GET THAT LICENSE &bull; </span>
+            <span class="ticker-text green">YOU WILL PASS THE EXAMINATION &bull; </span>
+            <span class="ticker-text yellow">GO GET THAT LICENSE &bull; </span>
+            <span class="ticker-text green">YOU WILL PASS THE EXAMINATION &bull; </span>
+            <span class="ticker-text yellow">GO GET THAT LICENSE &bull; </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Popular Subjects -->
+      <section class="section-shelf">
+        <div class="shelf-header">
+          <h3>Popular Subjects</h3>
+          <!-- Search Bar Replacement -->
+          <div class="search-wrapper">
+            <div class="search-container">
+              <input type="search" id="global-search" class="search-input" autocomplete="off" required>
+              <div class="search-svg-container">
+                <svg class="search-svg" xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 1000 150">
+                  <path class="search-path" d="M924.4 85.2c-19.5 19.5-50.8 19.7-70.3 0-19.3-19.4-19.3-51 .3-70.6 19.5-19.5 51-19.4 70.6 0 19.3 19.7 19.3 50.8-.5 70.6l35.4 35.3H0"/>
+                </svg>
+              </div>
+            </div>
+            <div id="search-results" class="search-results-dropdown"></div>
+          </div>
+        </div>
+        <div class="card-grid">
+          {% for subject in subjects %}
+          <div class="content-card" 
+               onclick="handlePreview(event, '{{ subject.title|escapejs }}', '{{ subject.description|escapejs }}', 'color-{{ forloop.counter }}')"
+               style="cursor: pointer;">
+            <div class="card-img-wrapper">
+              {% if subject.image %}
+                <img src="{{ subject.image.url }}" alt="{{ subject.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">
+              {% else %}
+                <div class="card-img color-{{ forloop.counter }}">
+                  <span class="card-initial">{{ subject.title|slice:":1" }}</span>
+                </div>
+              {% endif %}
+            </div>
+            <div class="card-info">
+              <h4 class="card-title">{{ subject.title }}</h4>
+              <p class="card-desc">{{ subject.description|default:"Master this subject with flashcards."|truncatechars:150}}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- Section: Formula Flashcards -->
+      {% if formula_subjects %}
+      <section class="section-shelf">
+        <div class="shelf-header">
+          <h3>Formula Flashcards</h3>
+        </div>
+        <div class="card-grid">
+          {% for subject in formula_subjects %}
+          <div class="content-card" 
+               onclick="handlePreview(event, '{{ subject.title|escapejs }}', '{{ subject.description|escapejs }}', 'color-formula-{{ forloop.counter }}')"
+               style="cursor: pointer;">
+            <div class="card-img-wrapper">
+              {% if subject.image %}
+                <img src="{{ subject.image.url }}" alt="{{ subject.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">
+              {% else %}
+                <div class="card-img color-formula-{{ forloop.counter }}" style="background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%);">
+                  <span class="card-initial">∫dx</span>
+                </div>
+              {% endif %}
+            </div>
+            <div class="card-info">
+              <h4 class="card-title">{{ subject.title }}</h4>
+              <p class="card-desc">{{ subject.description|default:"Essential formulas and explanations."|truncatechars:40 }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <!-- Section: Blog -->
+      {% if blog_posts %}
+      <section class="section-shelf">
+        <div class="shelf-header">
+          <h3>Boardflash Blog</h3>
+          <a href="{% url 'blog:blog_list' %}" class="show-all">Read all</a>
+        </div>
+        <div class="card-grid">
+          {% for post in blog_posts %}
+          <div class="content-card blog-card" 
+               onclick="window.location.href='{{ post.get_absolute_url }}'"
+               style="cursor: pointer;">
+            <div class="card-img-wrapper">
+              {% if post.cover_image %}
+                <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">
+              {% else %}
+                <div class="card-img" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); display:flex; align-items:center; justify-content:center;">
+                  <span style="font-size:1rem;">📝</span>
+                </div>
+              {% endif %}
+            </div>
+            <div class="card-info">
+              <h4 class="card-title blog-title">{{ post.title }}</h4>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <!-- Services Carousel Section -->
+      <section class="section-achievements">
+        <div class="achievements-header">
+          <h2 class="section-title">Services Offered</h2>
+          <div class="carousel-nav">
+            <button class="nav-circle" id="achieve-prev" aria-label="Previous">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </button>
+            <button class="nav-circle" id="achieve-next" aria-label="Next">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="achievements-track-wrapper">
+          <div class="achievements-track" id="achievements-track">
+            <!-- Card 1: Randomized Mode (Blue) -->
+            <div class="achievement-card card-blue">
+              <div class="card-top">
+                <div class="card-icon-circle"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg></div>
+                <span class="card-country">Study</span>
+              </div>
+              <div class="card-content">
+                <span class="card-subtitle">Smart Shuffling</span>
+                <h3 class="card-title">Randomized Mode</h3>
+              </div>
+              <div class="card-bottom">
+                <svg width="24" height="8" viewBox="0 0 24 8" fill="none" stroke="currentColor"><path d="M0 4c2 0 2 4 4 4s2-4 4-4 2 4 4 4 2-4 4-4 2 4 4 4 2-4 4-4" stroke-width="2"/></svg>
+              </div>
+            </div>
+
+            <!-- Card 2: Concierge Services (Orange) -->
+            <a href="/?highlight=concierge" class="achievement-card card-orange" style="text-decoration: none;">
+              <div class="card-top">
+                <div class="card-icon-circle"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
+                <span class="card-country">Service</span>
+              </div>
+              <div class="card-content">
+                <span class="card-subtitle">Custom Made</span>
+                <h3 class="card-title">Reviewers to Flashcard Services</h3>
+              </div>
+              <div class="card-bottom">
+                <svg width="24" height="8" viewBox="0 0 24 8" fill="none" stroke="currentColor"><path d="M0 4c2 0 2 4 4 4s2-4 4-4 2 4 4 4 2-4 4-4 2 4 4 4 2-4 4-4" stroke-width="2"/></svg>
+                <span class="card-link">Learn More ↗</span>
+              </div>
+            </a>
+
+            <!-- Card 3: Mock Exams (Purple) -->
+            <a href="{% url 'review:mock_exams' %}" class="achievement-card card-purple" style="text-decoration: none;">
+              <div class="card-top">
+                <div class="card-icon-circle"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></div>
+                <span class="card-country">Practice</span>
+              </div>
+              <div class="card-content">
+                <span class="card-subtitle">Real Simulation</span>
+                <h3 class="card-title">Mock Exams</h3>
+              </div>
+              <div class="card-bottom">
+                <svg width="24" height="8" viewBox="0 0 24 8" fill="none" stroke="currentColor"><path d="M0 4c2 0 2 4 4 4s2-4 4-4 2 4 4 4 2-4 4-4 2 4 4 4 2-4 4-4" stroke-width="2"/></svg>
+                <span class="card-link">Start Quiz ↗</span>
+              </div>
+            </a>
+
+            <!-- Card 4: Review Files (Green) -->
+            <a href="{% url 'review:review_files' %}" class="achievement-card card-green" style="text-decoration: none;">
+              <div class="card-top">
+                <div class="card-icon-circle"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg></div>
+                <span class="card-country">Organize</span>
+              </div>
+              <div class="card-content">
+                <span class="card-subtitle">File Management</span>
+                <h3 class="card-title">Review Files</h3>
+              </div>
+              <div class="card-bottom">
+                <svg width="24" height="8" viewBox="0 0 24 8" fill="none" stroke="currentColor"><path d="M0 4c2 0 2 4 4 4s2-4 4-4 2 4 4 4 2-4 4-4 2 4 4 4 2-4 4-4" stroke-width="2"/></svg>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pricing Section (Copied from Pricing Page) -->
+      <section class="section-shelf section-pricing-embed">
+        <div class="shelf-header">
+          <h3>Pricing Plans</h3>
+        </div>
+        
+        <div class="pricing-embed-container">
+          <!-- Pricing Cards from pricing.html -->
+          <div class="pricing-grid">
+            <!-- Free Tier -->
+            <div class="pricing-card">
+              <div class="card-header">
+                <h2 class="card-title">Free</h2>
+                <p class="card-desc">Essential study tools</p>
+              </div>
+              <div class="card-price">
+                <span class="currency">₱</span>0
+                <span class="period">/ month</span>
+              </div>
+              <div class="card-divider"></div>
+              <ul class="feature-list">
+                <li><span class="check-icon">✓</span> Access all flashcards</li>
+                <li><span class="check-icon">✓</span> Ordered study mode</li>
+                <li><span class="check-icon">✓</span> Progress syncing</li>
+                <li class="disabled"><span class="x-icon">✕</span> No random mode</li>
+              </ul>
+              <a href="#" class="btn-pill btn-full">Start Learning</a>
+            </div>
+
+            <!-- Premium Tier -->
+            <div class="pricing-card featured">
+              <div class="card-glow"></div>
+              <div class="card-header">
+                <div class="header-top">
+                  <h2 class="card-title">Premium</h2>
+                  <span class="badge-popular">POPULAR</span>
+                </div>
+                <p class="card-desc">Master your exams</p>
+              </div>
+              <div class="card-price">
+                <span class="currency">₱</span>100
+                <span class="period">/ month</span>
+              </div>
+              <div class="card-divider"></div>
+              <ul class="feature-list">
+                <li><span class="check-icon">✓</span> Randomized flashcards</li>
+                <li><span class="check-icon">✓</span> Reviewers to Flashcard Services</li>
+                <li><span class="check-icon">✓</span> Premium review files</li>
+                <li><span class="check-icon">✓</span> Mock exams & timers</li>
+              </ul>
+              <a href="{% url 'review:pricing' %}" class="btn-pill btn-full btn-accent">Upgrade Now</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Creator Message Section -->
+      <section class="section-creator-message">
+        <div class="creator-content">
+          <h2 class="creator-heading">Message from the Creator</h2>
+          <div class="letter-placeholder">
+            <span class="letter-text">Handwritten Letter Image Here</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+    <!-- Right Sidebar: Preview Pane -->
+    <aside class="preview-pane" id="preview-pane" style="display: flex; flex-direction: column;">
+      
+      <!-- Top Section: Dynamic Preview Content (Flex Grow) -->
+      <div style="flex: 1; overflow-y: auto; padding-bottom: 20px; display: flex; flex-direction: column;">
+        <div class="preview-header">
+          <h3>Content</h3>
+          <button class="close-preview" onclick="closePreview()">
+            <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2.47 2.47a.75.75 0 0 1 1.06 0L8 7.44l4.47-4.97a.75.75 0 1 1 1.06 1.06L9.06 8.5l4.47 4.47a.75.75 0 1 1-1.06 1.06L8 9.56l-4.47 4.47a.75.75 0 0 1-1.06-1.06L6.94 8.5 2.47 4.03a.75.75 0 0 1 0-1.06z"></path></svg>
+          </button>
+        </div>
+
+        <div class="preview-content" id="preview-content-empty" style="
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            color: #7f8ea3;
+        ">
+          <div class="empty-state-icon" style="margin-bottom: 16px; color: #7f8ea3;">
+            <svg height="64" width="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4" /></svg>
+          </div>
+          <p style="margin: 0; font-size: 0.95rem;">Select a subject to see available flashcard sets.</p>
+        </div>
+
+        <div class="preview-content hidden" id="preview-content-active">
+          <!-- Subject Header -->
+          <div class="preview-subject-header">
+            <h2 id="preview-title" style="margin-bottom: 0;">Subject Name</h2>
+          </div>
+          
+          <p id="preview-desc" class="preview-desc" style="margin-top: -5px; margin-bottom: -30px">Description goes here.</p>
+
+          <!-- Folder List -->
+          <div class="topic-list-container">
+            <h4 class="list-label">Folders</h4>
+            <div class="topic-list">
+              <!-- Folders populated via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Section: Concierge Promo (Fixed ~1/3) -->
+      <div class="concierge-section" style="
+          flex: 0 0 auto;
+          min-height: 200px;
+          border-top: 1px solid #3bf65a; /* Brighter border */
+          background: linear-gradient(to bottom, #0f2a15, #021705);
+          padding: 5px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center; /* Center Flex Items */
+          text-align: center; /* Center Text */
+          box-shadow: 0 -5px 15px rgba(59, 246, 106, 0.4); /* Strong Blue Glow */
+          position: relative;
+          z-index: 10;
+      ">
+        <h4 style="
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #4bd65e;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(96, 250, 109, 0.6); /* Text Glow */
+        ">
+            HAVE YOUR QUESTIONS?
+        </h4>
+        <p style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">
+            Don't have time to make cards? Send me your reviewers (PDF/Word), and I'll turn them into private flashcards or mock exams just for you!
+        </p>
+        <a href="https://m.me/yourusername" target="_blank" style="
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #41c052 0%, #3fbd50 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 999px; /* Pill shape */
+            font-size: 0.9rem;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.2s;
+            box-shadow: 0 0 5px rgba(59, 246, 121, 0.6); /* Button Glow */
+            border: 1px solid #93fdb6;
+            margin-bottom: 12px;
+        " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 25px rgba(59, 246, 121, 0.6)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 15px rgba(59, 130, 246, 0.6)'">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" style="margin-right: 8px;"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            MESSAGE ME
+        </a>
+      </div>
+
+    </aside>
+
+</div>
+
+<script nonce="{{ request.csp_nonce }}">
+  // Sticky Header Logic
+  const contentScroll = document.querySelector('.content-scroll');
+  const topBarBg = document.querySelector('.top-bar-bg');
+  
+  if(contentScroll && topBarBg) {
+    contentScroll.addEventListener('scroll', () => {
+      const opacity = Math.min(contentScroll.scrollTop / 150, 1);
+      topBarBg.style.opacity = opacity;
+    });
+  }
+
+  // Inject backend data safely using json_script
+  const previewData = JSON.parse(document.getElementById('preview-data').textContent);
+
+  // Preview Logic (Left Click Handler)
+  const previewPane = document.getElementById('preview-pane');
+  const emptyState = document.getElementById('preview-content-empty');
+  const activeState = document.getElementById('preview-content-active');
+  const pTitle = document.getElementById('preview-title');
+  const pDesc = document.getElementById('preview-desc');
+  // REMOVED: const pImg = document.getElementById('preview-img');
+  const topicListContainer = document.querySelector('.topic-list');
+
+  function handlePreview(e, title, desc, colorClass) {
+    // Override default click behavior to show preview instead of navigating immediately
+    e.preventDefault(); 
+    e.stopPropagation(); // Stop bubbling
+    
+    // Mobile: Show the pane as a modal
+    if (window.innerWidth <= 768) {
+        previewPane.classList.add('mobile-active');
+    }
+
+    // Show active state (force hide empty via inline style to beat inline display:flex)
+    emptyState.classList.add('hidden');
+    emptyState.style.display = 'none';
+    activeState.classList.remove('hidden');
+    activeState.style.display = 'flex';
+    
+    // Populate data
+    pTitle.textContent = title;
+    pDesc.textContent = desc || "Master this subject with our curated flashcards.";
+    
+    // Reset classes and add new color
+    // REMOVED: pImg.className = 'preview-cover-img-small ' + colorClass;
+    
+    // Clear existing mock topics
+    topicListContainer.innerHTML = '';
+
+    // Get real folders from data
+    const folders = previewData[title] || [];
+
+    if (folders.length === 0) {
+        topicListContainer.innerHTML = '<div style="padding:16px; color:#b3b3b3; font-size:0.9rem;">No folders available yet.</div>';
+    } else {
+        folders.forEach(folder => {
+            const item = document.createElement('div');
+            item.className = 'topic-item';
+            // On click, go to folder page
+            item.onclick = () => window.location.href = folder.url;
+            
+            item.innerHTML = `
+                <div class="topic-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                </div>
+                <div class="topic-info">
+                  <span class="topic-name">${folder.title}</span>
+                  <span class="topic-count">${folder.count} topics</span>
+                </div>
+                <button class="btn-play-mini" onclick="event.stopPropagation(); window.location.href='${folder.url}'">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+            `;
+            topicListContainer.appendChild(item);
+        });
+    }
+  }
+
+  function closePreview() {
+    previewPane.classList.remove('mobile-active');
+    emptyState.classList.remove('hidden');
+    emptyState.style.display = 'flex';
+    activeState.classList.add('hidden');
+    activeState.style.display = 'none';
+  }
+
+  // Resizable Pane Logic
+  const resizer = document.getElementById('dragMe');
+  const rightSide = document.getElementById('preview-pane');
+  const mainView = document.querySelector('.main-view');
+
+  let x = 0;
+  let y = 0;
+  let rightSideWidth = 0;
+
+  const mouseDownHandler = function(e) {
+    x = e.clientX;
+    y = e.clientY;
+    
+    // Calculate current width of the preview pane
+    const rect = rightSide.getBoundingClientRect();
+    rightSideWidth = rect.width;
+
+    document.addEventListener('mousemove', mouseMoveHandler);
+    document.addEventListener('mouseup', mouseUpHandler);
+    
+    // Add class to body to prevent text selection during drag
+    document.body.style.cursor = 'col-resize';
+    resizer.style.cursor = 'col-resize';
+  };
+
+  const mouseMoveHandler = function(e) {
+    // How far the mouse has been moved
+    const dx = e.clientX - x;
+
+    // Adjust width (dragging left increases width, dragging right decreases)
+    // We are resizing the right sidebar, so moving left (negative dx) should INCREASE width
+    const newWidth = rightSideWidth - dx;
+    
+    // Min/Max constraints
+    if (newWidth > 200 && newWidth < 800) { // Increased max width
+       rightSide.style.width = `${newWidth}px`;
+       rightSide.style.minWidth = `${newWidth}px`; // Force min-width update too
+       rightSide.style.flexBasis = `${newWidth}px`; // Ensure flex respects it
+    }
+  };
+
+  const mouseUpHandler = function() {
+    document.removeEventListener('mousemove', mouseMoveHandler);
+    document.removeEventListener('mouseup', mouseUpHandler);
+    
+    document.body.style.removeProperty('cursor');
+    resizer.style.removeProperty('cursor');
+  };
+
+  // Achievements Carousel Logic
+  const achieveTrack = document.getElementById('achievements-track');
+  const achievePrev = document.getElementById('achieve-prev');
+  const achieveNext = document.getElementById('achieve-next');
+  const achieveWrapper = document.querySelector('.achievements-track-wrapper');
+
+  if (achieveTrack && achievePrev && achieveNext) {
+    achievePrev.addEventListener('click', () => {
+      achieveWrapper.scrollBy({ left: -320, behavior: 'smooth' });
+    });
+
+    achieveNext.addEventListener('click', () => {
+      achieveWrapper.scrollBy({ left: 320, behavior: 'smooth' });
+    });
+  }
+
+  // --- HIGHLIGHT EFFECT FOR CONCIERGE ---
+  // Check URL params for ?highlight=concierge
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('highlight') === 'concierge') {
+      const conciergeSection = document.querySelector('.concierge-section');
+      if (conciergeSection) {
+          // Scroll into view (if sidebar was scrollable, though this section is fixed at bottom)
+          conciergeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Add Flash Animation Class
+          conciergeSection.style.transition = 'all 0.5s ease';
+          conciergeSection.style.transform = 'scale(1.05)';
+          conciergeSection.style.boxShadow = '0 0 40px rgba(59, 130, 246, 0.8)';
+          conciergeSection.style.borderTop = '2px solid #fff';
+          
+          // Reset after 1 second
+          setTimeout(() => {
+              conciergeSection.style.transform = 'scale(1)';
+              conciergeSection.style.boxShadow = '0 -5px 25px rgba(59, 130, 246, 0.4)';
+              conciergeSection.style.borderTop = '1px solid #3b82f6';
+          }, 1000);
+      }
+  }
+
+  // --- SEARCH LOGIC ---
+  const searchInput = document.getElementById('global-search');
+  const searchDropdown = document.getElementById('search-results');
+  let searchTimeout;
+
+  if (searchInput && searchDropdown) {
+      // Close on click outside
+      document.addEventListener('click', (e) => {
+          if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+              searchDropdown.classList.remove('active');
+          }
+      });
+
+      searchInput.addEventListener('input', (e) => {
+          const query = e.target.value.trim();
+          
+          clearTimeout(searchTimeout);
+          
+          if (query.length < 2) {
+              searchDropdown.classList.remove('active');
+              return;
+          }
+
+          searchTimeout = setTimeout(() => {
+              fetch(`/api/v1/search/?q=${encodeURIComponent(query)}`)
+                  .then(res => res.json())
+                  .then(data => {
+                      renderSearchResults(data.results);
+                  })
+                  .catch(err => console.error(err));
+          }, 300); // Debounce
+      });
+  }
+
+  function renderSearchResults(results) {
+      searchDropdown.innerHTML = '';
+      
+      if (!results || results.length === 0) {
+          searchDropdown.innerHTML = '<div class="sr-empty">No results found.</div>';
+      } else {
+          results.forEach(item => {
+              const el = document.createElement('a');
+              el.href = item.url;
+              el.className = 'search-result-item';
+              
+              // Handle special action for subjects (preview)
+              if (item.action === 'preview') {
+                  el.href = '#';
+                  el.onclick = (e) => {
+                       handlePreview(e, item.title, item.meta, 'color-1'); // Default color
+                       searchDropdown.classList.remove('active');
+                  };
+              }
+
+              let typeClass = 'type-subject';
+              if (item.type === 'Flashcard') typeClass = 'type-flashcard';
+              if (item.type === 'Blog') typeClass = 'type-blog';
+              if (item.type === 'Formula') typeClass = 'type-formula';
+
+              el.innerHTML = `
+                  <div class="sr-top">
+                      <span class="sr-title">${item.title}</span>
+                      <span class="sr-type ${typeClass}">${item.type}</span>
+                  </div>
+                  <span class="sr-meta">${item.meta}</span>
+              `;
+              searchDropdown.appendChild(el);
+          });
+      }
+      
+      searchDropdown.classList.add('active');
+  }
+</script>
+{% endblock %}

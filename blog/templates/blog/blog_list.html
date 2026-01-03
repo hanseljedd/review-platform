@@ -1,0 +1,158 @@
+{% extends "review/base.html" %}
+{% load static %}
+
+{% block title %}Blog - Boardflash{% endblock %}
+
+{% block head_extra %}
+<style>
+  .blog-container {
+    max-width: 1200px; /* Wider container for grid */
+    margin: 0 auto;
+    padding: 24px;
+  }
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .blog-card {
+    background: #1e293b;
+    border-radius: 12px; /* Slightly tighter radius */
+    overflow: hidden;
+    margin-bottom: 0; /* Remove bottom margin as grid handles gap */
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+  .blog-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+  .blog-cover {
+    width: 100%;
+    height: 180px; /* Reduced height for smaller cards */
+    object-fit: cover;
+  }
+  .blog-content {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .blog-title {
+    font-size: 1.25rem; /* Smaller title */
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #f1f5f9;
+    line-height: 1.4;
+  }
+  .blog-meta {
+    font-size: 0.8rem; /* Smaller meta */
+    color: #94a3b8;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .blog-summary {
+    color: #cbd5e1;
+    font-size: 0.9rem; /* Smaller body text */
+    line-height: 1.5;
+    margin-bottom: 16px;
+    flex: 1;
+  }
+  .read-more {
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: auto; /* Push to bottom */
+  }
+  
+  /* Responsive */
+  @media (max-width: 992px) {
+    .blog-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .blog-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Medium-style header */
+  .blog-header {
+    text-align: center;
+    margin-bottom: 48px;
+    padding-top: 24px;
+  }
+  .blog-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #fff 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+  }
+  .blog-header p {
+    color: #94a3b8;
+    font-size: 1.2rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="blog-container">
+  <div class="blog-header">
+    <h1>Boardflash Blog</h1>
+    <p>Insights, guides, and updates for your exam preparation.</p>
+  </div>
+
+  <div class="blog-grid">
+  {% for post in posts %}
+  <article class="blog-card">
+    {% if post.cover_image %}
+    <a href="{{ post.get_absolute_url }}">
+      <img src="{{ post.cover_image.url }}" alt="{{ post.title }}" class="blog-cover">
+    </a>
+    {% endif %}
+    <div class="blog-content">
+      <div class="blog-meta">
+        <span>{{ post.published_at|date:"F j, Y" }}</span>
+        {% if post.author %}
+        <span>•</span>
+        <span>{{ post.author.username }}</span>
+        {% endif %}
+      </div>
+      <a href="{{ post.get_absolute_url }}">
+        <h2 class="blog-title">{{ post.title }}</h2>
+      </a>
+      <p class="blog-summary">{{ post.summary }}</p>
+      <a href="{{ post.get_absolute_url }}" class="read-more">
+        Read Article 
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+    </div>
+  </article>
+  {% empty %}
+  </div> <!-- Close grid before empty state if needed, or inside -->
+  <div class="text-center py-5" style="grid-column: 1 / -1;">
+    <p class="text-muted">No posts available yet. Check back soon!</p>
+  </div>
+  {% endfor %}
+  </div> <!-- Close grid -->
+
+  <!-- Pagination -->
+  {% if is_paginated %}
+  <div class="d-flex justify-content-center gap-2 mt-4">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-secondary btn-sm">Previous</a>
+    {% endif %}
+    <span class="btn btn-sm disabled text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-secondary btn-sm">Next</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
