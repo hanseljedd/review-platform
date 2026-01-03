@@ -3,7 +3,7 @@ services:
     name: review-platform
     env: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn core.wsgi:application"
+    startCommand: "gunicorn core.wsgi:application --workers=$WEB_CONCURRENCY --threads=4 --worker-tmp-dir=/dev/shm"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
