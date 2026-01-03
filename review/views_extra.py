@@ -1,8 +1,9 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, JsonResponse
+from django.conf import settings
 
-from .models import Subject, Topic, Folder
+from .models import Subject, Topic, Folder, Question, MockExam
 
 
 def subject_folders(request, subject_slug):
@@ -64,3 +65,18 @@ def folder_topics(request, subject_slug, folder_name):
         "topics": topics,
     }
     return render(request, "review/folder_topics.html", context)
+
+
+def content_health(request):
+    """
+    Simple JSON endpoint to verify content exists in the active database.
+    Useful for deployment troubleshooting.
+    """
+    data = {
+        "subjects": Subject.objects.count(),
+        "topics": Topic.objects.count(),
+        "questions": Question.objects.count(),
+        "mock_exams": MockExam.objects.count(),
+        "debug": settings.DEBUG,
+    }
+    return JsonResponse(data)

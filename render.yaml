@@ -13,4 +13,6 @@ services:
         value: 4
       - key: DJANGO_SETTINGS_MODULE
         value: core.settings.production
+      - key: ALLOWED_HOSTS
+        value: .onrender.com,127.0.0.1,localhost
     autoDeploy: true

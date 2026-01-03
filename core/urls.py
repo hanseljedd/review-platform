@@ -19,5 +19,5 @@ urlpatterns = [
     path("api/v1/flashcards/", FlashcardListAPIView.as_view(), name="api-flashcards"),
 ]
 
-if settings.DEBUG:
+if getattr(settings, "SERVE_MEDIA", False) or settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -127,6 +127,9 @@ CSRF_COOKIE_SAMESITE = "Lax"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 
+# Optional: serve /media in production for demo environments (prefer S3 in real prod)
+SERVE_MEDIA = env.bool("SERVE_MEDIA", default=False)
+
 # Basic auth redirects
 LOGIN_URL = "review:login"
 LOGIN_REDIRECT_URL = "/"
