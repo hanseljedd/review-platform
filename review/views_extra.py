@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 from django.http import Http404, JsonResponse
 from django.conf import settings
+import os
 
 from .models import Subject, Topic, Folder, Question, MockExam
 
@@ -78,5 +79,35 @@ def content_health(request):
         "questions": Question.objects.count(),
         "mock_exams": MockExam.objects.count(),
         "debug": settings.DEBUG,
+    }
+    return JsonResponse(data)
+
+
+def media_health(request):
+    """
+    Report presence of expected media files for Subjects and Blog covers.
+    Helps debug 404s on /media/* in production.
+    """
+    subjects_missing = []
+    subjects_present = 0
+    try:
+        for s in Subject.objects.all()[:200]:
+            rel = getattr(s, "image", None)
+            if rel and getattr(rel, "name", ""):
+                path = os.path.join(settings.MEDIA_ROOT, rel.name)
+                if os.path.exists(path):
+                    subjects_present += 1
+                else:
+                    subjects_missing.append(rel.name)
+    except Exception:
+        pass
+
+    data = {
+        "serve_media": getattr(settings, "SERVE_MEDIA", False),
+        "media_url": settings.MEDIA_URL,
+        "media_root": str(settings.MEDIA_ROOT),
+        "subjects_present": subjects_present,
+        "subjects_missing_count": len(subjects_missing),
+        "subjects_missing_sample": subjects_missing[:20],
     }
     return JsonResponse(data)

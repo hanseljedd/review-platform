@@ -31,6 +31,7 @@ urlpatterns = [
     path("exams/session/<uuid:session_id>/result/", views.exam_result, name="exam_result"),
     path("info/", views.info_page, name="info"),
     path("health/content", views_extra.content_health, name="content_health"),
+    path("health/media", views_extra.media_health, name="media_health"),
     
     # API endpoints (Master Spec: /api/v1/)
     path("api/v1/", include("review.api_router")),

@@ -21,6 +21,9 @@ fi
 
 # Optional: copy seed media into media/ (one-time)
 if [ -n "$SEED_MEDIA_PATH" ]; then
+  echo "Copying seed media from $SEED_MEDIA_PATH to media/"
   mkdir -p media
   cp -R "$SEED_MEDIA_PATH"/* media/ || true
+  echo "Listing media/subjects after copy (sample):"
+  ls -al media/subjects 2>/dev/null | head || true
 fi
