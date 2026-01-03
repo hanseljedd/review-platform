@@ -13,3 +13,5 @@ django-cors-headers
 sentry-sdk
 django-ratelimit
 Pillow
+django-ckeditor>=6.7.1
+django-csp>=3.8
