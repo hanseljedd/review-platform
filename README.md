@@ -1,4 +1,4 @@
-# Project Name
+# Boardflash - Flashcards and Mock Exams
 
 A Django-based web application designed to help students prepare for board and professional examinations through structured review tools such as flashcards, formula summaries, blog articles, and mock exams.
 
@@ -49,4 +49,5 @@ Blog Posts
 ![Blog](screenshots/blog.png)
 
 Mock Exams
+
 ![Mock Exams](screenshots/mock-exam.png)
